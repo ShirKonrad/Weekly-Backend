@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   password: "bartar20@CS", 
   port: 5432,
   type: 'postgres',
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entities: [User, Event, Task, Tag],
 });
