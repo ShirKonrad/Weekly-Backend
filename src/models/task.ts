@@ -1,20 +1,35 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, BaseEntity } from "typeorm";
 import { Priority } from "../helpers/constants";
 import { Tag } from "./tag";
+import { User } from "./user";
+
+export interface ITask {
+    id: number;
+    title: string;
+    location?: string;
+    description?: string;
+    estTime: number;
+    dueDate: Date;
+    tagId?: number;
+    userId: number;
+    priority: number;
+    assignment?: Date;
+    isDone?: boolean;
+}
 
 @Entity()
-export class Task {
+export class Task extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
     title: string;
 
-    @Column()
-    location: string;
+    @Column({ nullable: true })
+    location?: string;
 
-    @Column()
-    description: string;
+    @Column({ nullable: true })
+    description?: string;
 
     @Column()
     estTime: number;
@@ -22,10 +37,15 @@ export class Task {
     @Column()
     dueDate: Date;
 
-    @Column()
+    @Column({ nullable: true })
     @ManyToOne((type) => Tag)
     @JoinColumn({ name: 'tagId', referencedColumnName: 'id' })
-    tagId: number;
+    tagId?: number;
+
+    @Column()
+    @ManyToOne((type) => User)
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    userId: number;
 
     @Column({
         type: "enum",
@@ -35,5 +55,8 @@ export class Task {
     priority: number;
 
     @Column({ nullable: true })
-    assignment: Date;
+    assignment?: Date;
+
+    @Column({ default: false })
+    isDone: boolean;
 }
