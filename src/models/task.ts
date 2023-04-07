@@ -14,6 +14,7 @@ export interface ITask {
     userId: number;
     priority: number;
     assignment?: Date;
+    isDone?: boolean;
 }
 
 @Entity()
@@ -55,4 +56,7 @@ export class Task extends BaseEntity {
 
     @Column({ nullable: true })
     assignment?: Date;
+
+    @Column({ default: false })
+    isDone: boolean;
 }

@@ -1,8 +1,8 @@
 import { Request, Response, Router } from "express";
-import { getGeneratedSchedule } from "../api/algo";
 import { Priority } from "../helpers/constants";
 import { getUserId } from "../helpers/currentUser";
-import { Task } from "../models/task";
+import { IEvent } from "../models/event";
+import { ITask, Task } from "../models/task";
 import { getAllEventsByUserId } from "../services/event";
 import { generateSchedule } from "../services/schedule";
 import { getAllTasksByUserId } from "../services/task";
@@ -10,7 +10,15 @@ import { getAllTasksByUserId } from "../services/task";
 
 const router = Router();
 
+/**
+ * Get new tasks and events and save them on DB. 
+ * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events. 
+ * Update the new assignments in the DB 
+ */
 router.post("", async (req: Request, res: Response) => {
+    const newTasks = req.body.tasks as ITask[];
+    const newEvents = req.body.events as IEvent[];
+
     // const tasks = await getAllTasksByUserId(getUserId(req));
     const events = await getAllEventsByUserId(getUserId(req));
 

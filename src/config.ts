@@ -7,11 +7,11 @@ import { Tag } from "./models/tag";
 require('dotenv').config();
 
 export const AppDataSource = new DataSource({
-  host: "weekly.cs.colman.ac.il",
-  database: "postgres",
-  username: "postgres",
-  password: "bartar20@CS",
-  port: 5432,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DATABASE,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  port: +process.env.POSTGRES_PORT!,
   type: 'postgres',
   synchronize: false,
   logging: false,

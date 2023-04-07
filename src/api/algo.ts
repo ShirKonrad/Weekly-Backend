@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Event } from '../models/event'
 import { ITask, Task } from '../models/task'
 
-export const getGeneratedSchedule = async (tasks: ITask[], events: Event[], workingHoursStart: number, workingHoursEnd: number) => {
+export const getTasksAssignments = async (tasks: ITask[], events: Event[], workingHoursStart: number, workingHoursEnd: number) => {
     return await axios.post('http://127.0.0.1:5000/assignment', tasks)
         .then(res => {
             console.log("algorithm response assignment")
