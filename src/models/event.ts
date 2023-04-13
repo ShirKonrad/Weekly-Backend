@@ -33,13 +33,13 @@ export class Event extends BaseEntity {
     @Column()
     endTime: Date;
 
-    @Column({ nullable: true })
-    @ManyToOne((type) => Tag)
-    @JoinColumn({ name: 'tagId', referencedColumnName: 'id' })
-    tagId: number;
+    // @Column({ nullable: true })
+    @ManyToOne(() => Tag)
+    // @JoinColumn({ name: 'tagId', referencedColumnName: 'id' })
+    tag: Tag;
 
-    @Column()
-    @ManyToOne((type) => User)
-    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-    userId: number;
+    // @Column()
+    @ManyToOne(() => User)
+    // @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user: User;
 }

@@ -1,28 +1,29 @@
 import express, { Request, Response } from "express";
-import { AppDataSource } from "./config";
+import { connectToDb } from "./config";
+import { NotFoundError } from "./errors/notFoundError";
+import { errorHandler } from "./middlewares/errorHandler";
 import { router } from "./routes"
+import cors from "cors";
 
-AppDataSource.initialize()
-    .then(async () => {
-        const cors = require("cors");
-        const app = express();
+const app = express();
 
-        app.use(express.json());
-        app.use(cors());
+app.use(express.json());
+app.use(cors());
 
-        app.use(router);
+app.use(router);
 
-        // const config = require("./config")
+// Try to reach to unexisting route
+app.all("*", () => {
+    throw new NotFoundError();
+});
 
-        // app.get('/', (req: Request, res: Response) => {
-        //     res.send('Hello, this is Express + TypeScript');
-        // });
+app.use(errorHandler);
 
-        const PORT = 3001;
-        app.listen(PORT, () => {
-            console.log(`[Server]: I am running at https://localhost:${PORT}`);
-        });
-    })
-    .catch((error) => console.log(error));
+const PORT = process.env.SERVER_PORT;
+app.listen(PORT, async () => {
+    console.log(`[Server]: I am running at https://localhost:${PORT}`);
+    await connectToDb();
+});
+
 
 

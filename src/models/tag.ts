@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, BaseEntity } from "typeorm";
+import { Event } from "./event";
+import { Task } from "./task";
 import { User } from "./user";
 
 @Entity()
@@ -9,11 +11,12 @@ export class Tag extends BaseEntity {
     @Column()
     name: string;
 
-    @Column()
-    @ManyToOne((type) => User)
-    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-    userId: number;
+    // @Column()
+    @ManyToOne(() => User, (user) => user.tags)
+    // @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user: User;
 
     @Column()
     color: string;
+
 }

@@ -3,10 +3,11 @@ import { User } from "./models/user";
 import { Event } from "./models/event";
 import { Task } from "./models/task";
 import { Tag } from "./models/tag";
+import { DatabaseConnectionError } from "./errors/databaseConnectionError";
 
 require('dotenv').config();
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   host: process.env.POSTGRES_HOST,
   database: process.env.POSTGRES_DATABASE,
   username: process.env.POSTGRES_USER,
@@ -17,3 +18,11 @@ export const AppDataSource = new DataSource({
   logging: false,
   entities: [User, Event, Task, Tag],
 });
+
+export const connectToDb = async () => {
+  await AppDataSource.initialize().catch((error) => {
+    console.log(error);
+    throw new DatabaseConnectionError();
+  });
+  console.log("Connected to database");
+};
