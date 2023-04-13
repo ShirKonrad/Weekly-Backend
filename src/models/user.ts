@@ -1,5 +1,6 @@
-import { BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Entity } from "typeorm/decorator/entity/Entity";
+import { Tag } from "./tag";
 
 @Entity()
 export class User extends BaseEntity {
@@ -14,4 +15,7 @@ export class User extends BaseEntity {
 
     @Column()
     email: string;
+
+    @OneToMany(() => Tag, (tag) => tag.user)
+    tags?: Tag[];
 }
