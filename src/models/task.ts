@@ -34,7 +34,7 @@ export class Task extends BaseEntity {
     @Column()
     estTime: number;
 
-    @Column("datetime")
+    @Column()
     dueDate: Date;
 
     // @Column({ nullable: true })

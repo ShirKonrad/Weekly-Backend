@@ -1,13 +1,12 @@
 import { Request, Response, Router } from "express";
 import { BadRequestError } from "../errors/badRequestError";
-import { Priority } from "../helpers/constants";
 import { getUserId } from "../helpers/currentUser";
 import { TaskAssignment } from "../helpers/types";
 import { IEvent } from "../models/event";
-import { ITask, Task } from "../models/task";
-import { getAllEventsByUserId, saveEvents } from "../services/event";
+import { ITask } from "../models/task";
+import { getAllEventsByUserId, getAllEventsByUserIdAndDates, saveEvents } from "../services/event";
 import { generateSchedule } from "../services/schedule";
-import { getAllTasksByUserId, saveTasks, updateAssignments } from "../services/task";
+import { getAllTasksByUserId, getAllTasksByUserIdAndDates, saveTasks, updateAssignments } from "../services/task";
 
 
 const router = Router();
@@ -57,6 +56,51 @@ router.post("", async (req: Request, res: Response, next) => {
         return res.status(200).send("no tasks to schedule");
     }
 });
+
+router.get("/week", async (req: Request, res: Response, next) => {
+    // Searching for the schedulw only if there is a date range from the client.
+    if (req?.query?.minDate && req?.query?.maxDate) {
+        const minDate = new Date(req?.query?.minDate.toString());
+        const maxDate = new Date(req?.query?.maxDate.toString());
+
+        const userId = getUserId(req);
+
+        // Selecting the tasks and the enevts separately.
+        const tasks = await getAllTasksByUserIdAndDates(userId, minDate, maxDate);
+        const events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
+
+        // Building a list of schedule entities.
+        const tasksFormatted = tasks?.map((task) => {
+            // Returning only the tasks that are assigned.
+            if (task.assignment) {
+                const endTime = new Date(task?.assignment);
+                endTime.setHours(endTime.getHours() + task.estTime);
+
+                return {
+                    id: task.id,
+                    title: task.title,
+                    startTime: task.assignment,
+                    endTime: endTime,
+                    tagId: task.tag
+                }
+            }
+        })
+
+        const eventsFormatted = events?.map((event) => {
+            return {
+                id: event.id,
+                title: event.title,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                tagId: event.tag
+            }
+        })
+
+        return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
+    } else {
+        next(new BadRequestError("No dates range"))
+    }
+})
 
 
 export { router as scheduleRouter };
