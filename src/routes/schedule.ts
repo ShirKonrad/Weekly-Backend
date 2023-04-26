@@ -41,10 +41,10 @@ router.post("", async (req: Request, res: Response, next) => {
 
     // TODO: get the user's working hours
 
-    if (tasks.length > 0) {
+    if (tasks?.length > 0) {
         try {
             const schedule = await generateSchedule(tasks, events, 9, 18) as TaskAssignment[];
-            if (schedule) {
+            if (schedule?.length > 0) {
                 const updatedTasks = await updateAssignments(schedule, userId)
                 return res.status(200).send(updatedTasks);
             }
