@@ -29,7 +29,7 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], workin
         })
         .catch((err) => {
             console.error(err)
-            return err;
-            // throw new AxiosError()
+            // return err;
+            throw new AxiosError()
         })
 }
