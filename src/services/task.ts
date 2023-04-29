@@ -2,12 +2,12 @@ import { In, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 
-export async function getAllTasksByUserId(userId: number) {
+export async function getAllTasksByUserId(userId: number, withDone?: boolean) {
     return await Task.find({
         where: {
             user: { id: userId },
             dueDate: MoreThanOrEqual(new Date()),
-            isDone: false
+            isDone: withDone ? undefined : false
         },
         relations: ["user", "tag"],
     });
@@ -39,12 +39,13 @@ export async function saveTasks(tasks: ITask[], userId: number) {
 export async function updateAssignments(assignments: TaskAssignment[], userId: number) {
     const tasks = await Task.find({
         where: {
-            id: In(assignments.map((assignment) => assignment.taskId))
+            id: In(assignments.map((assignment) => assignment.taskId)),
+            user: { id: userId },
         },
         relations: ["user", "tag"],
     });
 
-    if (tasks) {
+    if (tasks?.length > 0) {
         const tasksToSave = tasks.map((task) => {
             return {
                 ...task,
@@ -53,5 +54,22 @@ export async function updateAssignments(assignments: TaskAssignment[], userId: n
         })
 
         return await Task.save(tasksToSave)
+    }
+}
+
+export async function setDone(taskId: number, userId: number) {
+    const task = await Task.findOne({
+        where: {
+            id: taskId,
+            user: { id: userId }
+        },
+        relations: ["user", "tag"],
+    });
+
+    if (task) {
+        task.isDone = !task.isDone;
+        return await Task.save(task);
+    } else {
+        return undefined;
     }
 }
