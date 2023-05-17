@@ -1,11 +1,9 @@
 import { Request } from "express";
-
-declare global {
-    namespace Express {
-        // interface User extends ITokenPayload {}
-    }
-}
+const jwt = require("jsonwebtoken");
 
 export const getUserId = (req: Request) => {
-    return 1;  // TODO: change this
+    // TODO: uncomment when adding the token to the requests' headers
+
+    // return jwt.verify(req.headers?.token, process.env.SECRET_KEY);
+    return 1;
 };
