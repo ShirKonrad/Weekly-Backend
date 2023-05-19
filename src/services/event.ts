@@ -23,7 +23,7 @@ export async function saveEvents(events: IEvent[], userId: number) {
     const newEvents = events.map((event: IEvent) => {
         return Event.create({
             ...event,
-            tag: { id: event.tagId },
+            tag: { id: event?.tag?.id },
             user: { id: userId }
         })
     })

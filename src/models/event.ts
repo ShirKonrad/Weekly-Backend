@@ -9,7 +9,7 @@ export interface IEvent {
     description?: string;
     startTime: Date;
     endTime: Date;
-    tagId?: number;
+    tag?: Tag;
     userId: number;
 }
 

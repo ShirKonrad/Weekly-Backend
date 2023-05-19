@@ -11,7 +11,7 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], workin
         workingHoursStart,
         workingHoursEnd
     }
-    return await axios.post('http://127.0.0.1:5000/assignment', body)
+    return await axios.post(`${process.env.MICRO_SERVICE_URL}/assignment`, body)
         .then(res => {
             console.log("algorithm response assignment")
             console.log(res.data)

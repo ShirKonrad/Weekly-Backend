@@ -22,6 +22,8 @@ router.post("", async (req: Request, res: Response, next) => {
 
     const userId = getUserId(req);
 
+    console.log(newTasks)
+
     try {
         if (newTasks && newTasks.length > 0) {
             await saveTasks(newTasks, userId);
