@@ -28,7 +28,7 @@ export async function saveTasks(tasks: ITask[], userId: number) {
         return Task.create({
             ...task,
             user: { id: userId },
-            tag: { id: task.tagId },
+            tag: { id: task?.tag?.id },
             isDone: false
         })
     })

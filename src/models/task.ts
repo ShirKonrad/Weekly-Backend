@@ -10,8 +10,7 @@ export interface ITask {
     description?: string;
     estTime: number;
     dueDate: Date;
-    tagId?: number;
-    userId: number;
+    tag?: Tag;
     priority: number;
     assignment?: Date;
     isDone?: boolean;
