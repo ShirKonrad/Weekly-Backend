@@ -5,9 +5,25 @@ import { ITask, Task } from '../models/task'
 
 export const getTasksAssignments = async (tasks: Task[], events: Event[], workingHoursStart: number, workingHoursEnd: number) => {
     console.log("CALL TO ALGORITHM")
+
+    const tasksJson = tasks.map((task) => {
+        return {
+            ...task,
+            dueDate: task.dueDate.toLocaleString()
+        }
+    })
+
+    const eventsJson = events.map((event) => {
+        return {
+            ...event,
+            startTime: event.startTime.toLocaleString(),
+            endTime: event.endTime.toLocaleString()
+        }
+    })
+
     const body = {
-        tasks,
-        events,
+        tasks: tasksJson,
+        events: eventsJson,
         workingHoursStart,
         workingHoursEnd
     }
@@ -28,7 +44,7 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], workin
 
         })
         .catch((err) => {
-            console.error(err)
+            // console.error(err)
             // return err;
             throw new AxiosError()
         })
