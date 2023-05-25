@@ -4,6 +4,8 @@ import { NotFoundError } from "./errors/notFoundError";
 import { errorHandler } from "./middlewares/errorHandler";
 import { router } from "./routes"
 import cors from "cors";
+import { assignmentsUpdate } from "./services/job";
+const cron = require("node-cron");
 
 const app = express();
 
@@ -16,6 +18,18 @@ app.use(router);
 app.all("*", () => {
     throw new NotFoundError();
 });
+
+cron.schedule("0 45 22 * * *", function () {   // will run every 2:00am
+    console.log("---------------------");
+    console.log("running the job.. time: " + new Date().toLocaleString());
+    assignmentsUpdate()
+});
+
+// cron.schedule("* */1 * * * *", function () {
+//     console.log("---------------------");
+//     console.log("running a task every 1 minute");
+//     assignmentsUpdate();
+// });
 
 app.use(errorHandler);
 
