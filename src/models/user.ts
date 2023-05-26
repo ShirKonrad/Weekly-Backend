@@ -18,6 +18,12 @@ export class User extends BaseEntity {
 
     @Column()
     password: string;
+
+    @Column()
+    beginDayHour: number;
+
+    @Column()
+    endDayHour: number;
     
     @OneToMany(() => Tag, (tag) => tag.user)
     tags?: Tag[];

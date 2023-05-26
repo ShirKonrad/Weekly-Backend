@@ -16,12 +16,14 @@ export async function getUserByEmail(email: string) {
     });
 }
 
-export async function createUser(firstName: string, lastName: string, email: string, password: string) {
+export async function createUser(firstName: string, lastName: string, email: string, password: string, beginDayHour: number, endDayHour: number) {
     const user = await User.create({
         firstName,
         lastName,
         email,
         password,
+        beginDayHour,
+        endDayHour
     })
 
     const results = await User.save(user)
