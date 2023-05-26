@@ -37,7 +37,7 @@ router.get('/:id(\\d+)', async (req: Request, res: Response, next) => {
 
 router.post('/register', async (req: Request, res: Response, next) => {
     try {
-        const { firstName, lastName, email, password } = req.body.user;
+        const { firstName, lastName, email, password, beginDayHour, endDayHour } = req.body.user;
 
         let dbUser = await getUserByEmail(email)
 
@@ -46,7 +46,7 @@ router.post('/register', async (req: Request, res: Response, next) => {
         } else {
             let hashedPassword = bcrypt.hashSync(password, 10);
 
-            await createUser(firstName, lastName, email, hashedPassword)
+            await createUser(firstName, lastName, email, hashedPassword, beginDayHour, endDayHour)
                 .then((addedNewUser) => {
                     const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);
                     return res.status(200).send({ token, user: addedNewUser });
@@ -78,7 +78,9 @@ router.post('/logIn', async (req: Request, res: Response, next) => {
                         id: dbUser?.id,
                         firstName: dbUser?.firstName,
                         lastName: dbUser?.lastName,
-                        email: dbUser?.email
+                        email: dbUser?.email,
+                        beginDayHour: dbUser?.beginDayHour,
+                        endDayHour: dbUser?.endDayHour,
                     }
                     return res.status(200).send({ token, user: retUser });
                 } else {
