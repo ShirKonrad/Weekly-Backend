@@ -27,8 +27,10 @@ export async function assignmentsUpdate() {
                         const schedule = await generateSchedule(tasks, events, 9, 18) as TaskAssignment[];
                         if (schedule?.length > 0) {
                             const updatedTasks = await updateAssignments(schedule, user.id)
+                            console.log("Updated tasks for user: " + user.id)
                         }
                     } catch (err) {
+                        console.log("Failed to update tasks for user: " + user.id)
                         console.error(err);
                         // new BadRequestError("Generating schedule failed")
                     }
@@ -39,7 +41,7 @@ export async function assignmentsUpdate() {
     }
 }
 
-function needsUpdate(tasks: Task[]) {
+function needsUpdate(tasks: Task[]): boolean {
     const now = new Date();
     const task = tasks.find((task) => task.assignment && task.assignment < now && task.dueDate > now)
     return task !== undefined;

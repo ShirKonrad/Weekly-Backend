@@ -19,17 +19,12 @@ app.all("*", () => {
     throw new NotFoundError();
 });
 
-cron.schedule("0 45 22 * * *", function () {   // will run every 2:00am
+// A job that is running every 2:00am
+cron.schedule("0 55 22 * * *", function () {
     console.log("---------------------");
     console.log("running the job.. time: " + new Date().toLocaleString());
     assignmentsUpdate()
 });
-
-// cron.schedule("* */1 * * * *", function () {
-//     console.log("---------------------");
-//     console.log("running a task every 1 minute");
-//     assignmentsUpdate();
-// });
 
 app.use(errorHandler);
 
