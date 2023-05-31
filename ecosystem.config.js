@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "Weekly",
+      name: "Weekly-Backend",
       script: "src/index.js",
       watch: true,
       env: {
