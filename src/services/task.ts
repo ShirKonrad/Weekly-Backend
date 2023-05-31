@@ -1,4 +1,4 @@
-import { In, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import { Between, In, MoreThanOrEqual } from "typeorm";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 
@@ -17,7 +17,10 @@ export async function getAllTasksByUserIdAndDates(userId: number, minDate: Date,
     return await Task.find({
         where: {
             user: { id: userId },
-            assignment: MoreThanOrEqual(minDate) && LessThanOrEqual(maxDate)
+            assignment: Between(
+                minDate, 
+                maxDate
+            ),
         },
         relations: ["user", "tag"],
     });

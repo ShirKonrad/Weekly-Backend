@@ -83,7 +83,7 @@ router.get("/week", async (req: Request, res: Response, next) => {
                     title: task.title,
                     startTime: task.assignment,
                     endTime: endTime,
-                    tagId: task.tag
+                    tag: task.tag
                 }
             }
         })
@@ -94,7 +94,7 @@ router.get("/week", async (req: Request, res: Response, next) => {
                 title: event.title,
                 startTime: event.startTime,
                 endTime: event.endTime,
-                tagId: event.tag
+                tag: event.tag
             }
         })
 
