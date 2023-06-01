@@ -7,6 +7,7 @@ import { ITask } from "../models/task";
 import { getAllEventsByUserId, getAllEventsByUserIdAndDates, saveEvents } from "../services/event";
 import { generateSchedule } from "../services/schedule";
 import { getAllTasksByUserId, getAllTasksByUserIdAndDates, saveTasks, updateAssignments } from "../services/task";
+import { getUserById } from "../services/user";
 
 
 const router = Router();
@@ -37,15 +38,16 @@ router.post("", async (req: Request, res: Response, next) => {
         next(new BadRequestError("Saving tasks or events failed"))
     }
 
-
+    // get all the user's tasks and events that their due date has not passed
     const tasks = await getAllTasksByUserId(userId);
     const events = await getAllEventsByUserId(userId);
 
-    // TODO: get the user's working hours
-
     if (tasks?.length > 0) {
         try {
-            const schedule = await generateSchedule(tasks, events, 9, 18) as TaskAssignment[];
+            // get the user in order to get his day hours
+            const user = await getUserById(userId);
+
+            const schedule = await generateSchedule(tasks, events, user?.beginDayHour || 9, user?.endDayHour || 18) as TaskAssignment[];
             if (schedule?.length > 0) {
                 const updatedTasks = await updateAssignments(schedule, userId)
                 return res.status(200).send(updatedTasks);
