@@ -19,8 +19,8 @@ app.all("*", () => {
     throw new NotFoundError();
 });
 
-// A job that is running every 2:00am
-cron.schedule("0 55 22 * * *", function () {
+// A job that is running at 2:00AM every day
+cron.schedule("0 0 2 * * *", function () {
     console.log("---------------------");
     console.log("running the job.. time: " + new Date().toLocaleString());
     assignmentsUpdate()
