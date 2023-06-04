@@ -106,3 +106,7 @@ export async function updateTask(newTask: ITask, userId: number) {
     return undefined;
   }
 }
+
+export async function deleteTask(taskId: number) {
+  return Task.delete(taskId);
+}

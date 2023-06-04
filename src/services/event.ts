@@ -56,3 +56,7 @@ export async function updateEvent(newEvent: Event, userId: number) {
     return undefined;
   }
 }
+
+export async function deleteEvent(eventId: number) {
+  return Event.delete(eventId);
+}
