@@ -7,7 +7,7 @@ import { getAllTasksByUserId, setDone } from "../services/task";
 const router = Router();
 
 router.get("/all", async (req: Request, res: Response, next) => {
-    const tasks = await getAllTasksByUserId(getUserId(req), true);
+    const tasks = await getAllTasksByUserId(getUserId(req), true, true);
     if (!tasks) {
         next(new DataNotFoundError("Tasks"));
     } else {
