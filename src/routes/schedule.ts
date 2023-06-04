@@ -2,6 +2,7 @@ import { Request, Response, Router } from "express";
 import { BadRequestError } from "../errors/badRequestError";
 import { getUserId } from "../helpers/currentUser";
 import { TaskAssignment } from "../helpers/types";
+import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { IEvent } from "../models/event";
 import { ITask } from "../models/task";
 import { getAllEventsByUserId, getAllEventsByUserIdAndDates, saveEvents } from "../services/event";
@@ -10,14 +11,14 @@ import { getAllTasksByUserId, getAllTasksByUserIdAndDates, saveTasks, updateAssi
 import { getUserById } from "../services/user";
 
 
-const router = Router();
+const router = wrapAsyncRouter();
 
 /**
  * Get new tasks and events and save them on DB. 
  * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events. 
  * Update the new assignments in the DB 
  */
-router.post("", async (req: Request, res: Response, next) => {
+router.post("", async (req: Request, res: Response) => {
     const newTasks = req.body.tasks as ITask[];
     const newEvents = req.body.events as IEvent[];
 
@@ -35,7 +36,7 @@ router.post("", async (req: Request, res: Response, next) => {
 
     } catch (err) {
         console.error(err);
-        next(new BadRequestError("Saving tasks or events failed"))
+        throw new BadRequestError("Saving tasks or events failed")
     }
 
     // get all the user's tasks and events that their due date has not passed
@@ -54,14 +55,14 @@ router.post("", async (req: Request, res: Response, next) => {
             }
         } catch (err) {
             console.error(err);
-            next(new BadRequestError("Generating schedule failed"))
+            throw new BadRequestError("Generating schedule failed")
         }
     } else {
         return res.status(200).send("no tasks to schedule");
     }
 });
 
-router.get("/week", async (req: Request, res: Response, next) => {
+router.get("/week", async (req: Request, res: Response) => {
     // Searching for the schedulw only if there is a date range from the client.
     if (req?.query?.minDate && req?.query?.maxDate) {
         const minDate = new Date(req?.query?.minDate.toString());
@@ -102,7 +103,7 @@ router.get("/week", async (req: Request, res: Response, next) => {
 
         return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
     } else {
-        next(new BadRequestError("No dates range"))
+        throw new BadRequestError("No dates range")
     }
 })
 

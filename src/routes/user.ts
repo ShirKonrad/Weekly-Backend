@@ -4,10 +4,11 @@ import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { DatabaseConnectionError } from "../errors/databaseConnectionError";
 import { UserError } from "../errors/userError";
 import { UnauthorizedError } from "../errors/unauthorizedError";
+import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const router = Router();
+const router = wrapAsyncRouter();
 
 // const cleanUserObject = (user) => {
 //     delete user.password;
@@ -18,7 +19,7 @@ const router = Router();
 //     return user;
 // };
 
-router.get('/:id(\\d+)', async (req: Request, res: Response, next) => {
+router.get('/:id(\\d+)', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
@@ -27,22 +28,22 @@ router.get('/:id(\\d+)', async (req: Request, res: Response, next) => {
         if (user) {
             return res.status(200).send(user);
         } else {
-            next(new DataNotFoundError("User not found"))
+            throw new DataNotFoundError("User not found")
         }
     } catch (err) {
-        next(new DatabaseConnectionError())
+        throw new DatabaseConnectionError()
     }
-    
+
 });
 
-router.post('/register', async (req: Request, res: Response, next) => {
+router.post('/register', async (req: Request, res: Response) => {
     try {
         const { firstName, lastName, email, password, beginDayHour, endDayHour } = req.body.user;
 
         let dbUser = await getUserByEmail(email)
 
         if (dbUser) {
-            next(new UserError("An account with this email already exists"))
+            throw new UserError("An account with this email already exists")
         } else {
             let hashedPassword = bcrypt.hashSync(password, 10);
 
@@ -52,15 +53,15 @@ router.post('/register', async (req: Request, res: Response, next) => {
                     return res.status(200).send({ token, user: addedNewUser });
                 })
                 .catch((error) => {
-                    next(new DatabaseConnectionError())
+                    throw new DatabaseConnectionError()
                 });
         }
     } catch (err) {
-        next(new DatabaseConnectionError())
+        throw new DatabaseConnectionError()
     }
 });
 
-router.post('/logIn', async (req: Request, res: Response, next) => {
+router.post('/logIn', async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body.params;
 
@@ -85,18 +86,18 @@ router.post('/logIn', async (req: Request, res: Response, next) => {
                     return res.status(200).send({ token, user: retUser });
                 } else {
                     //Declaring the errors
-                    next(new UserError("Please enter the corrent password"))
+                    throw new UserError("Please enter the corrent password")
                 }
             });
         } else {
-            next(new UserError("User is not registered, Sign Up first"))
+            throw new UserError("User is not registered, Sign Up first")
         }
     } catch (err) {
-        next(new DatabaseConnectionError())
+        throw new DatabaseConnectionError()
     }
 });
 
-router.put('/', async (req: Request, res: Response, next) => {
+router.put('/', async (req: Request, res: Response) => {
     // const { token } = req.headers;
     // const id = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -119,7 +120,7 @@ router.put('/', async (req: Request, res: Response, next) => {
     //         if (columnNamesToUpdate.length === 0) return res.status(200).send({ message: `No values were updated`, updatedValues: columnNamesToUpdate });
     //         user.set(valuesToUpdate);
     //         const updatedUser = await user.save();
-        
+
     //         return res.status(200).send({ message: `Successfully updated the following values: ${columnNamesToUpdate.join(', ')}`, updatedValues: columnNamesToUpdate, user: cleanUserObject(updatedUser.dataValues) });
     //     }
     // } catch (err) {

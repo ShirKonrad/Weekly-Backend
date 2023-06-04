@@ -18,7 +18,7 @@ export async function getAllTasksByUserIdAndDates(userId: number, minDate: Date,
         where: {
             user: { id: userId },
             assignment: Between(
-                minDate, 
+                minDate,
                 maxDate
             ),
         },

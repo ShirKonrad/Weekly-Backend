@@ -1,9 +1,11 @@
-import { Request } from "express";
+import { NextFunction, Request } from "express";
+import { UnauthorizedError } from "../errors/unauthorizedError";
 const jwt = require("jsonwebtoken");
 
 export const getUserId = (req: Request) => {
-    // TODO: uncomment when adding the token to the requests' headers
-
-    // return jwt.verify(req.headers?.token, process.env.SECRET_KEY);
-    return 1;
+    if (req.headers?.token) {
+        return jwt.verify(req.headers?.token, process.env.SECRET_KEY) ?? null;
+    } else {
+        throw new UnauthorizedError("token is missing")
+    }
 };
