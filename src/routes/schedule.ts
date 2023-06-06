@@ -2,21 +2,23 @@ import { Request, Response, Router } from "express";
 import { BadRequestError } from "../errors/badRequestError";
 import { getUserId } from "../helpers/currentUser";
 import { TaskAssignment } from "../helpers/types";
+import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { IEvent } from "../models/event";
 import { ITask } from "../models/task";
 import { getAllEventsByUserId, getAllEventsByUserIdAndDates, saveEvents } from "../services/event";
 import { generateSchedule } from "../services/schedule";
 import { getAllTasksByUserId, getAllTasksByUserIdAndDates, saveTasks, updateAssignments } from "../services/task";
+import { getUserById } from "../services/user";
 
 
-const router = Router();
+const router = wrapAsyncRouter();
 
 /**
  * Get new tasks and events and save them on DB. 
  * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events. 
  * Update the new assignments in the DB 
  */
-router.post("", async (req: Request, res: Response, next) => {
+router.post("", async (req: Request, res: Response) => {
     const newTasks = req.body.tasks as ITask[];
     const newEvents = req.body.events as IEvent[];
 
@@ -34,32 +36,33 @@ router.post("", async (req: Request, res: Response, next) => {
 
     } catch (err) {
         console.error(err);
-        next(new BadRequestError("Saving tasks or events failed"))
+        throw new BadRequestError("Saving tasks or events failed")
     }
 
-
+    // get all the user's tasks and events that their due date has not passed
     const tasks = await getAllTasksByUserId(userId);
     const events = await getAllEventsByUserId(userId);
 
-    // TODO: get the user's working hours
-
     if (tasks?.length > 0) {
         try {
-            const schedule = await generateSchedule(tasks, events, 9, 18) as TaskAssignment[];
+            // get the user in order to get his day hours
+            const user = await getUserById(userId);
+
+            const schedule = await generateSchedule(tasks, events, user?.beginDayHour || 9, user?.endDayHour || 18) as TaskAssignment[];
             if (schedule?.length > 0) {
                 const updatedTasks = await updateAssignments(schedule, userId)
                 return res.status(200).send(updatedTasks);
             }
         } catch (err) {
             console.error(err);
-            next(new BadRequestError("Generating schedule failed"))
+            throw new BadRequestError("Generating schedule failed")
         }
     } else {
         return res.status(200).send("no tasks to schedule");
     }
 });
 
-router.get("/week", async (req: Request, res: Response, next) => {
+router.get("/week", async (req: Request, res: Response) => {
     // Searching for the schedulw only if there is a date range from the client.
     if (req?.query?.minDate && req?.query?.maxDate) {
         const minDate = new Date(req?.query?.minDate.toString());
@@ -83,7 +86,7 @@ router.get("/week", async (req: Request, res: Response, next) => {
                     title: task.title,
                     startTime: task.assignment,
                     endTime: endTime,
-                    tagId: task.tag
+                    tag: task.tag
                 }
             }
         })
@@ -94,13 +97,13 @@ router.get("/week", async (req: Request, res: Response, next) => {
                 title: event.title,
                 startTime: event.startTime,
                 endTime: event.endTime,
-                tagId: event.tag
+                tag: event.tag
             }
         })
 
         return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
     } else {
-        next(new BadRequestError("No dates range"))
+        throw new BadRequestError("No dates range")
     }
 })
 

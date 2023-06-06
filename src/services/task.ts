@@ -1,4 +1,4 @@
-import { In, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import { Between, In, MoreThanOrEqual } from "typeorm";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
@@ -10,11 +10,15 @@ export async function getById(taskId: number) {
   });
 }
 
-export async function getAllTasksByUserId(userId: number, withDone?: boolean) {
+export async function getAllTasksByUserId(
+  userId: number,
+  withDone?: boolean,
+  withPastDueDate?: boolean
+) {
   return await Task.find({
     where: {
       user: { id: userId },
-      dueDate: MoreThanOrEqual(new Date()),
+      dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
       isDone: withDone ? undefined : false,
     },
     relations: ["user", "tag"],
@@ -29,7 +33,7 @@ export async function getAllTasksByUserIdAndDates(
   return await Task.find({
     where: {
       user: { id: userId },
-      assignment: MoreThanOrEqual(minDate) && LessThanOrEqual(maxDate),
+      assignment: Between(minDate, maxDate),
     },
     relations: ["user", "tag"],
   });

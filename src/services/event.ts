@@ -1,4 +1,4 @@
-import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import { Between, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
 
 export async function getById(eventId: number) {
@@ -27,7 +27,7 @@ export async function getAllEventsByUserIdAndDates(
   return await Event.find({
     where: {
       user: { id: userId },
-      startTime: MoreThanOrEqual(minDate) && LessThanOrEqual(maxDate),
+      startTime: Between(minDate, maxDate),
     },
   });
 }

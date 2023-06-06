@@ -3,7 +3,7 @@ import { TaskAssignment } from '../helpers/types'
 import { Event } from '../models/event'
 import { ITask, Task } from '../models/task'
 
-export const getTasksAssignments = async (tasks: Task[], events: Event[], workingHoursStart: number, workingHoursEnd: number) => {
+export const getTasksAssignments = async (tasks: Task[], events: Event[], dayHoursStart: number, dayHoursEnd: number) => {
     console.log("CALL TO ALGORITHM")
 
     const tasksJson = tasks.map((task) => {
@@ -24,8 +24,8 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], workin
     const body = {
         tasks: tasksJson,
         events: eventsJson,
-        workingHoursStart,
-        workingHoursEnd
+        dayHoursStart,
+        dayHoursEnd
     }
     return await axios.post(`${process.env.MICRO_SERVICE_URL}/assignment`, body)
         .then(res => {

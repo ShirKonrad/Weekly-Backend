@@ -3,7 +3,7 @@ import { User } from "../models/user";
 export async function getUserById(userId: number) {
     return await User.findOne({
         where: {
-            id: userId 
+            id: userId
         },
     });
 }
@@ -11,7 +11,7 @@ export async function getUserById(userId: number) {
 export async function getUserByEmail(email: string) {
     return await User.findOne({
         where: {
-            email: email 
+            email: email
         },
     });
 }
@@ -28,4 +28,8 @@ export async function createUser(firstName: string, lastName: string, email: str
 
     const results = await User.save(user)
     return results
+}
+
+export async function getAllUsers() {
+    return await User.find();
 }
