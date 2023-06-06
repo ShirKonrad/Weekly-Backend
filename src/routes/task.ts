@@ -4,6 +4,7 @@ import { getUserId } from "../helpers/currentUser";
 import {
   deleteTask,
   getAllTasksByUserId,
+  getById,
   setDone,
   updateTask,
 } from "../services/task";
@@ -11,6 +12,15 @@ import { Task } from "../models/task";
 import { BadRequestError } from "../errors/badRequestError";
 
 const router = Router();
+
+router.get("/getOne/:id", async (req: Request, res: Response, next) => {
+  const task = await getById(parseInt(req.params.id));
+  if (!task) {
+    next(new DataNotFoundError("Tasks"));
+  } else {
+    return res.status(200).send(task);
+  }
+});
 
 router.get("/all", async (req: Request, res: Response, next) => {
   const tasks = await getAllTasksByUserId(getUserId(req), true);

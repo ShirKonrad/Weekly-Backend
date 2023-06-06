@@ -3,6 +3,13 @@ import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
 
+export async function getById(taskId: number) {
+  return await Task.findOne({
+    where: { id: taskId },
+    relations: ["user", "tag"],
+  });
+}
+
 export async function getAllTasksByUserId(userId: number, withDone?: boolean) {
   return await Task.find({
     where: {

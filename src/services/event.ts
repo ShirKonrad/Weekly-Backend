@@ -1,6 +1,15 @@
 import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
 
+export async function getById(eventId: number) {
+  return await Event.findOne({
+    where: {
+      id: eventId,
+    },
+    relations: ["user", "tag"],
+  });
+}
+
 export async function getAllEventsByUserId(userId: number) {
   return await Event.find({
     where: {
