@@ -1,5 +1,6 @@
 import { Between, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
+import { title } from "process";
 
 export async function getById(eventId: number) {
   return await Event.findOne({
@@ -54,13 +55,22 @@ export async function updateEvent(newEvent: Event, userId: number) {
   });
 
   if (event) {
-    event.title = newEvent.title;
-    event.location = newEvent.location;
-    event.description = newEvent.description;
-    event.startTime = newEvent.startTime;
-    event.endTime = newEvent.endTime;
-    // event.tag= await getTagById(newEvent.tag?.id ?? 0);
-    return await Event.save(event);
+    const e = Event.create({
+      ...event,
+      title: newEvent.title,
+      location: newEvent.location,
+      description: newEvent.description,
+      startTime: new Date(newEvent.startTime),
+      endTime: new Date(newEvent.endTime),
+    });
+    // event.title = newEvent.title;
+    // event.location = newEvent.location;
+    // event.description = newEvent.description;
+    // event.startTime = new Date(newEvent.startTime);
+    // event.endTime = new Date(newEvent.endTime);
+    // // event.tag= await getTagById(newEvent.tag?.id ?? 0);
+    // return await Event.save(event);
+    return await Event.save(e);
   } else {
     return undefined;
   }

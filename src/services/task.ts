@@ -6,7 +6,7 @@ import { getTagById } from "./tag";
 export async function getById(taskId: number) {
   return await Task.findOne({
     where: { id: taskId },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 }
 

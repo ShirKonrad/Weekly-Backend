@@ -4,28 +4,34 @@ import { Event } from "../models/event";
 import { getUserId } from "../helpers/currentUser";
 import { BadRequestError } from "../errors/badRequestError";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
+import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 
-const router = Router();
+const router = wrapAsyncRouter();
 
-router.get("/:id", async (req: Request, res: Response, next) => {
+router.get("/:id", async (req: Request, res: Response) => {
   const event = await getById(parseInt(req.params.id));
   if (!event) {
-    next(new DataNotFoundError("event"));
+    throw new DataNotFoundError("event");
   } else {
     return res.status(200).send(event);
   }
 });
 
 router.put("/:id", async (req: Request, res: Response) => {
-  const updatedEvent = await updateEvent(
-    req.body.event as Event,
-    getUserId(req)
-  );
+  try {
+    const updatedEvent = await updateEvent(
+      req.body.event as Event,
+      getUserId(req)
+    );
 
-  if (!updatedEvent) {
+    if (!updatedEvent) {
+      throw new BadRequestError("Updating event failed");
+    } else {
+      return res.status(200).send(updateEvent);
+    }
+  } catch (err: any) {
+    console.log(err);
     throw new BadRequestError("Updating event failed");
-  } else {
-    return res.status(200).send(updateEvent);
   }
 });
 
