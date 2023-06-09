@@ -1,4 +1,6 @@
 import { Between, In, MoreThanOrEqual } from "typeorm";
+import { DataNotFoundError } from "../errors/dataNotFoundError";
+import { NotFoundError } from "../errors/notFoundError";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
@@ -21,7 +23,7 @@ export async function getAllTasksByUserId(
       dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
       isDone: withDone ? undefined : false,
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 }
 
@@ -35,7 +37,7 @@ export async function getAllTasksByUserIdAndDates(
       user: { id: userId },
       assignment: Between(minDate, maxDate),
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 }
 
@@ -61,7 +63,7 @@ export async function updateAssignments(
       id: In(assignments.map((assignment) => assignment.taskId)),
       user: { id: userId },
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 
   if (tasks?.length > 0) {
@@ -84,7 +86,7 @@ export async function setDone(taskId: number, userId: number) {
       id: taskId,
       user: { id: userId },
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 
   if (task) {
@@ -101,17 +103,22 @@ export async function updateTask(newTask: ITask, userId: number) {
       id: newTask.id,
       user: { id: userId },
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 
   if (task) {
+
+    //TODO: check assignment not overlap
+
     task.title = newTask.title;
     task.location = newTask.location;
     task.description = newTask.description;
     task.dueDate = newTask.dueDate;
     task.estTime = newTask.estTime;
-    // task.tag= await getTagById(newTask.tag?.id ?? 0);
     task.priority = newTask.priority;
+    task.tag = newTask.tag ? await getTagById(newTask.tag?.id, userId) || task.tag : null;
+    task.assignment = newTask.assignment;
+
     return await Task.save(task);
   } else {
     return undefined;

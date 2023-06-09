@@ -8,6 +8,11 @@ export async function getAllTagsByUserId(userId: number) {
   });
 }
 
-export async function getTagById(id: number) {
-  return await Tag.findOne({ where: { id: id } });
+export async function getTagById(id: number, userId: number) {
+  return await Tag.findOne({
+    where: {
+      id: id,
+      user: { id: userId }
+    }
+  });
 }

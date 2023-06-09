@@ -8,7 +8,7 @@ import {
   setDone,
   updateTask,
 } from "../services/task";
-import { Task } from "../models/task";
+import { ITask, Task } from "../models/task";
 import { BadRequestError } from "../errors/badRequestError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 
@@ -26,7 +26,7 @@ router.get(
 );
 
 router.get("/all", async (req: Request, res: Response, next: NextFunction) => {
-  const tasks = await getAllTasksByUserId(getUserId(req), true);
+  const tasks = await getAllTasksByUserId(getUserId(req), true, true);
   if (!tasks) {
     throw new DataNotFoundError("Tasks");
   } else {
@@ -48,7 +48,7 @@ router.put(
 );
 
 router.put("/:id", async (req: Request, res: Response) => {
-  const updatedTask = await updateTask(req.body.task as Task, getUserId(req));
+  const updatedTask = await updateTask(req.body.task as ITask, getUserId(req));
   if (!updatedTask) {
     throw new BadRequestError("Updating task failed");
   } else {
@@ -58,8 +58,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 router.put("/delete/:id", async (req: Request, res: Response) => {
   const retVal = await deleteTask(parseInt(req.params.id));
-  if (retVal.affected) {
-    return res.status(200).send(retVal.affected);
+  if (retVal.affected && retVal.affected > 0) {
+    return res.status(200).send(true);
   } else {
     throw new BadRequestError("Deleting task failed");
   }

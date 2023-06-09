@@ -1,13 +1,14 @@
 import { Between, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
 import { title } from "process";
+import { getTagById } from "./tag";
 
 export async function getById(eventId: number) {
   return await Event.findOne({
     where: {
       id: eventId,
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 }
 
@@ -17,6 +18,7 @@ export async function getAllEventsByUserId(userId: number) {
       user: { id: userId },
       startTime: MoreThanOrEqual(new Date()),
     },
+    relations: ["tag"],
   });
 }
 
@@ -30,6 +32,7 @@ export async function getAllEventsByUserIdAndDates(
       user: { id: userId },
       startTime: Between(minDate, maxDate),
     },
+    relations: ["tag"],
   });
 }
 
@@ -45,32 +48,27 @@ export async function saveEvents(events: IEvent[], userId: number) {
   return await Event.insert(newEvents);
 }
 
-export async function updateEvent(newEvent: Event, userId: number) {
+export async function updateEvent(newEvent: IEvent, userId: number) {
   const event = await Event.findOne({
     where: {
       id: newEvent.id,
       user: { id: userId },
     },
-    relations: ["user", "tag"],
+    relations: ["tag"],
   });
 
   if (event) {
-    const e = Event.create({
-      ...event,
-      title: newEvent.title,
-      location: newEvent.location,
-      description: newEvent.description,
-      startTime: new Date(newEvent.startTime),
-      endTime: new Date(newEvent.endTime),
-    });
-    // event.title = newEvent.title;
-    // event.location = newEvent.location;
-    // event.description = newEvent.description;
-    // event.startTime = new Date(newEvent.startTime);
-    // event.endTime = new Date(newEvent.endTime);
-    // // event.tag= await getTagById(newEvent.tag?.id ?? 0);
-    // return await Event.save(event);
-    return await Event.save(e);
+
+    //TODO: check time not overlap
+
+    event.title = newEvent.title;
+    event.location = newEvent.location;
+    event.description = newEvent.description;
+    event.startTime = new Date(newEvent.startTime);
+    event.endTime = new Date(newEvent.endTime);
+    event.tag = newEvent.tag ? await getTagById(newEvent.tag?.id, userId) || event.tag : null;
+
+    return await Event.save(event);
   } else {
     return undefined;
   }
