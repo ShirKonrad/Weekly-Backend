@@ -1,10 +1,11 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import { createUser, getUserByEmail, getUserById } from "../services/user";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { DatabaseConnectionError } from "../errors/databaseConnectionError";
 import { UserError } from "../errors/userError";
 import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
+import { InternalServerError } from "../errors/internalServerError";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -61,39 +62,37 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/logIn', async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body.params;
-
-        let dbUser = await getUserByEmail(email)
-
-        if (dbUser) {
-            bcrypt.compare(password, dbUser.password, (err: any, result: any) => {
-                //Comparing the hashed password
-                if (err) {
-                    return res.status(500).send("Internal server error");
-                } else if (result === true) {
-                    //Checking if credentials match
-                    const token = jwt.sign(dbUser?.id, process.env.SECRET_KEY);
-                    const retUser = {
-                        id: dbUser?.id,
-                        firstName: dbUser?.firstName,
-                        lastName: dbUser?.lastName,
-                        email: dbUser?.email,
-                        beginDayHour: dbUser?.beginDayHour,
-                        endDayHour: dbUser?.endDayHour,
-                    }
-                    return res.status(200).send({ token, user: retUser });
-                } else {
-                    //Declaring the errors
-                    throw new UserError("Please enter the corrent password")
+router.post('/logIn', async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body.params;
+    let dbUser = await getUserByEmail(email)
+        .catch(() => {
+            throw new DatabaseConnectionError()
+        });
+   
+    if (dbUser) {
+        bcrypt.compare(password, dbUser.password, (err: any, result: any) => {
+            //Comparing the hashed password
+            if (err) {
+                next(new InternalServerError())
+            } else if (result === true) {
+                //Checking if credentials match
+                const token = jwt.sign(dbUser?.id, process.env.SECRET_KEY);
+                const retUser = {
+                    id: dbUser?.id,
+                    firstName: dbUser?.firstName,
+                    lastName: dbUser?.lastName,
+                    email: dbUser?.email,
+                    beginDayHour: dbUser?.beginDayHour,
+                    endDayHour: dbUser?.endDayHour,
                 }
-            });
-        } else {
-            throw new UserError("User is not registered, Sign Up first")
-        }
-    } catch (err) {
-        throw new DatabaseConnectionError()
+                return res.status(200).send({ token, user: retUser });
+            } else {
+                //Declaring the errors
+                next(new UserError("Please enter the corrent password"))
+            }
+        });
+    } else {
+        throw new UserError("User is not registered, Sign Up first")
     }
 });
 
