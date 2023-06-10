@@ -30,6 +30,15 @@ export async function createUser(firstName: string, lastName: string, email: str
     return results
 }
 
+export async function updateUser(userId: number, firstName: string, lastName: string, beginDayHour: number, endDayHour: number) {
+    return await User.update(userId, {
+        firstName,
+        lastName,
+        beginDayHour,
+        endDayHour
+    });
+}
+
 export async function getAllUsers() {
     return await User.find();
 }
