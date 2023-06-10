@@ -22,10 +22,10 @@ export class Event extends BaseEntity {
     title: string;
 
     @Column({ nullable: true })
-    location: string;
+    location?: string;
 
     @Column({ nullable: true })
-    description: string;
+    description?: string;
 
     @Column()
     startTime: Date;
@@ -36,7 +36,7 @@ export class Event extends BaseEntity {
     // @Column({ nullable: true })
     @ManyToOne(() => Tag)
     // @JoinColumn({ name: 'tagId', referencedColumnName: 'id' })
-    tag: Tag;
+    tag?: Tag | null;
 
     // @Column()
     @ManyToOne(() => User)

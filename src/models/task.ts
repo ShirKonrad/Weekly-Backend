@@ -39,7 +39,7 @@ export class Task extends BaseEntity {
     // @Column({ nullable: true })
     @ManyToOne(() => Tag)
     // @JoinColumn({ name: 'tagId', referencedColumnName: 'id' })
-    tag?: Tag;
+    tag?: Tag | null;
 
     // @Column()
     @ManyToOne(() => User)
