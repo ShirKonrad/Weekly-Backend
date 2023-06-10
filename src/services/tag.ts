@@ -21,3 +21,7 @@ export async function addNewTag(tag: Tag, userId: number) {
   const newTag = Tag.create({ ...tag, user: { id: userId } });
   return await Tag.insert(newTag);
 }
+
+export async function deleteTag(tagId: number) {
+  return await Tag.delete(tagId);
+}
