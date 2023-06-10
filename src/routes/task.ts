@@ -18,7 +18,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     const task = await getById(parseInt(req.params.id));
     if (!task) {
-      new DataNotFoundError("Tasks");
+      throw new DataNotFoundError("Tasks");
     } else {
       return res.status(200).send(task);
     }

@@ -47,11 +47,11 @@ export async function saveTasks(tasks: ITask[], userId: number) {
       ...task,
       user: { id: userId },
       tag: { id: task?.tag?.id },
-      isDone: false,
+      isDone: task.isDone || false,
     });
   });
 
-  return await Task.insert(newTasks);
+  return await Task.save(newTasks);
 }
 
 export async function updateAssignments(
