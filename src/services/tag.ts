@@ -25,3 +25,21 @@ export async function addNewTag(tag: Tag, userId: number) {
 export async function deleteTag(tagId: number) {
   return await Tag.delete(tagId);
 }
+
+export async function updateTag(newTag: Tag, userId: number) {
+  const tag = await Tag.findOne({
+    where: {
+      id: newTag.id,
+      user: { id: userId },
+    },
+  });
+
+  if (tag) {
+    tag.name = newTag.name;
+    tag.color = newTag.color;
+
+    return await Tag.save(tag);
+  } else {
+    return undefined;
+  }
+}

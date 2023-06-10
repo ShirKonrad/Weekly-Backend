@@ -2,8 +2,14 @@ import { Request, Response, Router } from "express";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { getUserId } from "../helpers/currentUser";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
-import { addNewTag, deleteTag, getAllTagsByUserId } from "../services/tag";
+import {
+  addNewTag,
+  deleteTag,
+  getAllTagsByUserId,
+  updateTag,
+} from "../services/tag";
 import { BadRequestError } from "../errors/badRequestError";
+import { Tag } from "../models/tag";
 
 const router = wrapAsyncRouter();
 
@@ -31,6 +37,15 @@ router.put("/delete/:id", async (req: Request, res: Response) => {
     return res.status(200).send(true);
   } else {
     throw new BadRequestError("Deleting tag failed");
+  }
+});
+
+router.put("/update/:id", async (req: Request, res: Response) => {
+  const updatedTag = await updateTag(req.body.tag as Tag, getUserId(req));
+  if (!updatedTag) {
+    throw new BadRequestError("Updating tag failed");
+  } else {
+    return res.status(200).send(updatedTag);
   }
 });
 
