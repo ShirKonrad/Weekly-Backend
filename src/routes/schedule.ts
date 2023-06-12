@@ -1,5 +1,7 @@
 import { Request, Response, Router } from "express";
 import { BadRequestError } from "../errors/badRequestError";
+import { ClientMessageError } from "../errors/clientMessageError";
+import { clientErrors } from "../helpers/constants";
 import { getUserId } from "../helpers/currentUser";
 import { TaskAssignment } from "../helpers/types";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
@@ -22,7 +24,7 @@ import { getUserById } from "../services/user";
 const router = wrapAsyncRouter();
 
 /**
- * Get new tasks and events and save them on DB.
+ * Get new or existing tasks and events and save them on DB.
  * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events.
  * Update the new assignments in the DB
  */
@@ -43,7 +45,7 @@ router.post("", async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.error(err);
-    throw new BadRequestError("Saving tasks or events failed");
+    throw new ClientMessageError(clientErrors.SAVING_TASKS_FAILED);
   }
 
   // get all the user's tasks and events that their due date has not passed
@@ -63,11 +65,12 @@ router.post("", async (req: Request, res: Response) => {
       )) as TaskAssignment[];
       if (schedule?.length > 0) {
         const updatedTasks = await updateAssignments(schedule, userId);
-        return res.status(200).send(updatedTasks);
+        const notAssignedTasks = tasks.filter((task) => !(updatedTasks?.map((updatedTask) => updatedTask.id).includes(task.id)))
+        return res.status(200).send({ assignedTasks: updatedTasks, notAssignedTasks: notAssignedTasks });
       }
     } catch (err) {
       console.error(err);
-      throw new BadRequestError("Generating schedule failed");
+      throw new ClientMessageError(clientErrors.GENERATE_SCHEDULE_FAILED);
     }
   } else {
     return res.status(200).send("no tasks to schedule");
