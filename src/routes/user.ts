@@ -26,52 +26,47 @@ const router = wrapAsyncRouter();
 //     return user;
 // };
 
-router.get("/:id(\\d+)", async (req: Request, res: Response) => {
-  const { id } = req.params;
+// router.get("/:id(\\d+)", async (req: Request, res: Response) => {
+//   const { id } = req.params;
 
-  try {
-    const user = await getUserById(parseInt(id));
+//   try {
+//     const user = await getUserById(parseInt(id));
 
-    if (user) {
-      return res.status(200).send(user);
-    } else {
-      throw new DataNotFoundError("User not found");
-    }
-  } catch (err) {
-    throw new DatabaseConnectionError();
-  }
-});
+//     if (user) {
+//       return res.status(200).send(user);
+//     } else {
+//       throw new DataNotFoundError("User not found");
+//     }
+//   } catch (err) {
+//     throw new DatabaseConnectionError();
+//   }
+// });
 
 router.post("/register", async (req: Request, res: Response) => {
-  try {
-    const { firstName, lastName, email, password, beginDayHour, endDayHour } =
-      req.body.user;
+  const { firstName, lastName, email, password, beginDayHour, endDayHour } =
+    req.body.user;
 
-    let dbUser = await getUserByEmail(email);
+  let dbUser = await getUserByEmail(email);
 
-    if (dbUser) {
-      throw new UserError("An account with this email already exists");
-    } else {
-      let hashedPassword = bcrypt.hashSync(password, 10);
+  if (dbUser) {
+    throw new UserError("An account with this email already exists");
+  } else {
+    let hashedPassword = bcrypt.hashSync(password, 10);
 
-      await createUser(
-        firstName,
-        lastName,
-        email,
-        hashedPassword,
-        beginDayHour,
-        endDayHour
-      )
-        .then((addedNewUser) => {
-          const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);
-          return res.status(200).send({ token, user: addedNewUser });
-        })
-        .catch((error) => {
-          throw new DatabaseConnectionError();
-        });
-    }
-  } catch (err) {
-    throw err;
+    await createUser(
+      firstName,
+      lastName,
+      email,
+      hashedPassword,
+      beginDayHour,
+      endDayHour
+    ).then((addedNewUser) => {
+      const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);
+      return res.status(200).send({ token, user: addedNewUser });
+    });
+    //   .catch((error) => {
+    //     throw new DatabaseConnectionError();
+    //   });
   }
 });
 
@@ -79,9 +74,7 @@ router.post(
   "/logIn",
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body.params;
-    let dbUser = await getUserByEmail(email).catch(() => {
-      throw new DatabaseConnectionError();
-    });
+    let dbUser = await getUserByEmail(email);
 
     if (dbUser) {
       bcrypt.compare(password, dbUser.password, (err: any, result: any) => {
@@ -125,13 +118,9 @@ router.put("/", async (req: Request, res: Response) => {
     lastName,
     beginDayHour,
     endDayHour
-  )
-    .then((user) => {
-      return res.status(200).send(user);
-    })
-    .catch((error) => {
-      throw new DatabaseConnectionError();
-    });
+  ).then((user) => {
+    return res.status(200).send(user);
+  });
 });
 
 // const { token } = req.headers;
