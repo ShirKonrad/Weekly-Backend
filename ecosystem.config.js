@@ -12,7 +12,7 @@ module.exports = {
         POSTGRES_DATABASE: "postgres",
         POSTGRES_USER: "postgres",
         POSTGRES_PASSWORD: "bartar20@CS",
-        MICRO_SERVICE_URL: "http://127.0.0.1:5000",
+        MICRO_SERVICE_URL: "http://weekly.cs.colman.ac.il:5000",
         SECRET_KEY: "weeklysecret",
       },
       env_production: {
