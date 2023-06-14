@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const router = wrapAsyncRouter();
+const router = wrapAsyncRouter();
 
 // const cleanUserObject = (user) => {
 //     delete user.password;
@@ -69,7 +70,7 @@ router.post('/logIn', async (req: Request, res: Response, next: NextFunction) =>
         .catch(() => {
             throw new DatabaseConnectionError()
         });
-   
+
     if (dbUser) {
         bcrypt.compare(password, dbUser.password, (err: any, result: any) => {
             //Comparing the hashed password
@@ -113,35 +114,36 @@ router.put('/', async (req: Request, res: Response) => {
         });
 });
 
-    // const { token } = req.headers;
-    // const id = jwt.verify(token, process.env.SECRET_KEY);
+// const { token } = req.headers;
+// const id = jwt.verify(token, process.env.SECRET_KEY);
 
-    // const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
+// const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
 
-    // try {
-    //     const user = await sequelize.models.users.findOne({ where: { id } });
-    //     if (!user) {
-    //         res.status(500).send({ message: `Could not update. User with id: ${id} does not exist` })
-    //     } else {
-    //         const valuesToUpdate = {
-    //             ...shouldUpdate(username, user.username) && {username},
-    //             ...shouldUpdate(email, user.email) && {email},
-    //             ...shouldUpdate(photo, user.photo) && {photo},
-    //             ...shouldUpdate(cardNumber, user.photo) && { card_number: cardNumber },
-    //             ...shouldUpdate(expirationMonth, user.card_expiration_year) && { card_expiration_month: expirationMonth },
-    //             ...shouldUpdate(expirationYear, user.card_expiration_year) && { card_expiration_year: expirationYear }
-    //         }
-    //         const columnNamesToUpdate = Object.keys(valuesToUpdate);
-    //         if (columnNamesToUpdate.length === 0) return res.status(200).send({ message: `No values were updated`, updatedValues: columnNamesToUpdate });
-    //         user.set(valuesToUpdate);
-    //         const updatedUser = await user.save();
+// try {
+//     const user = await sequelize.models.users.findOne({ where: { id } });
+//     if (!user) {
+//         res.status(500).send({ message: `Could not update. User with id: ${id} does not exist` })
+//     } else {
+//         const valuesToUpdate = {
+//             ...shouldUpdate(username, user.username) && {username},
+//             ...shouldUpdate(email, user.email) && {email},
+//             ...shouldUpdate(photo, user.photo) && {photo},
+//             ...shouldUpdate(cardNumber, user.photo) && { card_number: cardNumber },
+//             ...shouldUpdate(expirationMonth, user.card_expiration_year) && { card_expiration_month: expirationMonth },
+//             ...shouldUpdate(expirationYear, user.card_expiration_year) && { card_expiration_year: expirationYear }
+//         }
+//         const columnNamesToUpdate = Object.keys(valuesToUpdate);
+//         if (columnNamesToUpdate.length === 0) return res.status(200).send({ message: `No values were updated`, updatedValues: columnNamesToUpdate });
+//         user.set(valuesToUpdate);
+//         const updatedUser = await user.save();
 
-    //         return res.status(200).send({ message: `Successfully updated the following values: ${columnNamesToUpdate.join(', ')}`, updatedValues: columnNamesToUpdate, user: cleanUserObject(updatedUser.dataValues) });
-    //     }
-    // } catch (err) {
-    //     console.log(err);
-    //     res.status(err.status || 500).send({ message: `Could not update. An error occurred while trying to update user with id: ${id}` });
-    // }
+
+//         return res.status(200).send({ message: `Successfully updated the following values: ${columnNamesToUpdate.join(', ')}`, updatedValues: columnNamesToUpdate, user: cleanUserObject(updatedUser.dataValues) });
+//     }
+// } catch (err) {
+//     console.log(err);
+//     res.status(err.status || 500).send({ message: `Could not update. An error occurred while trying to update user with id: ${id}` });
+// }
 // });
 
 // router.post('/validateToken', async (req: Request, res: Response, next) => {
