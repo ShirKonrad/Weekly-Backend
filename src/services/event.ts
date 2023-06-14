@@ -45,7 +45,7 @@ export async function saveEvents(events: IEvent[], userId: number) {
     });
   });
 
-  return await Event.insert(newEvents);
+  return await Event.save(newEvents);
 }
 
 export async function updateEvent(newEvent: IEvent, userId: number) {

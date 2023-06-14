@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { createUser, getUserByEmail, getUserById } from "../services/user";
+import { createUser, getUserByEmail, getUserById, updateUser } from "../services/user";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { DatabaseConnectionError } from "../errors/databaseConnectionError";
 import { UserError } from "../errors/userError";
 import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { InternalServerError } from "../errors/internalServerError";
+import { getUserId } from "../helpers/currentUser";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -88,7 +89,7 @@ router.post('/logIn', async (req: Request, res: Response, next: NextFunction) =>
                 return res.status(200).send({ token, user: retUser });
             } else {
                 //Declaring the errors
-                next(new UserError("Please enter the corrent password"))
+                next(new UserError("Please enter the correct password"))
             }
         });
     } else {
@@ -97,6 +98,21 @@ router.post('/logIn', async (req: Request, res: Response, next: NextFunction) =>
 });
 
 router.put('/', async (req: Request, res: Response) => {
+    const { id, firstName, lastName, beginDayHour, endDayHour } = req.body.user;
+    const currUserId = getUserId(req);
+
+    if (parseInt(currUserId) !== id) {
+        throw new UserError("You can only update your own user!");
+    }
+
+    const user = await updateUser(id, firstName, lastName, beginDayHour, endDayHour)
+        .then(user => {
+            return res.status(200).send(user);
+        }).catch(error => {
+            throw new DatabaseConnectionError();
+        });
+});
+
     // const { token } = req.headers;
     // const id = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -126,7 +142,7 @@ router.put('/', async (req: Request, res: Response) => {
     //     console.log(err);
     //     res.status(err.status || 500).send({ message: `Could not update. An error occurred while trying to update user with id: ${id}` });
     // }
-});
+// });
 
 // router.post('/validateToken', async (req: Request, res: Response, next) => {
 //     const { token, id } = req.body;
@@ -146,3 +162,7 @@ router.put('/', async (req: Request, res: Response) => {
 
 
 export { router as userRouter };
+
+function next(arg0: UserError) {
+    throw new Error("Function not implemented.");
+}
