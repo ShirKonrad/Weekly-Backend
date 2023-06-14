@@ -11,7 +11,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const router = wrapAsyncRouter();
-const router = wrapAsyncRouter();
 
 // const cleanUserObject = (user) => {
 //     delete user.password;
