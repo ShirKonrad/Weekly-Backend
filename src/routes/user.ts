@@ -174,7 +174,3 @@ router.put("/", async (req: Request, res: Response) => {
 // });
 
 export { router as userRouter };
-
-function next(arg0: UserError) {
-  throw new Error("Function not implemented.");
-}
