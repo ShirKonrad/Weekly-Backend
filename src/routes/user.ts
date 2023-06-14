@@ -136,7 +136,10 @@ router.put("/", async (req: Request, res: Response) => {
 
 // const { token } = req.headers;
 // const id = jwt.verify(token, process.env.SECRET_KEY);
+// const { token } = req.headers;
+// const id = jwt.verify(token, process.env.SECRET_KEY);
 
+// const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
 // const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
 
 // try {
