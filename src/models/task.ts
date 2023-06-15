@@ -14,6 +14,7 @@ export interface ITask {
     priority: number;
     assignment?: Date;
     isDone?: boolean;
+    assignmentLastUpdate?: Date;
 }
 
 @Entity()
@@ -58,4 +59,7 @@ export class Task extends BaseEntity {
 
     @Column({ default: false })
     isDone: boolean;
+
+    @Column({ nullable: true })
+    assignmentLastUpdate?: Date;
 }
