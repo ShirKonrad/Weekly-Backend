@@ -14,6 +14,7 @@ const NOW = new Date();
 export async function assignmentsUpdate() {
     console.log("JOB IS RUNNING")
     const allUsers: User[] = await getAllUsers()
+    let numOfUpdatedUsers = 0;
 
     // Go over all the users
     if (allUsers && allUsers?.length > 0) {
@@ -22,6 +23,8 @@ export async function assignmentsUpdate() {
 
             // Check if there are tasks that meet the condition for update
             if (needsUpdate(tasks)) {
+
+                console.log("starting update tasks for user: " + user.id)
 
                 // find all tasks that their assignment is today, and treat them as events, means don't reschedule them
                 // and reschedule the rest of the tasks
@@ -45,16 +48,21 @@ export async function assignmentsUpdate() {
                         if (schedule?.length > 0) {
                             const updatedTasks = await updateAssignments(schedule, user.id)
                             console.log("Updated tasks for user: " + user.id)
+                            numOfUpdatedUsers++;
                         }
                     } catch (err) {
                         console.log("Failed to update tasks for user: " + user.id)
-                        console.error(err);
+                        console.log(err);
                         // new BadRequestError("Generating schedule failed")
                     }
                 }
-
+            } else {
+                console.log("No update needed for user: " + user.id)
             }
         }
+        console.log("JOB FINISHED RUNNING")
+        console.log("Number of user updated: " + numOfUpdatedUsers)
+        console.log("---------------------------------------")
     }
 }
 

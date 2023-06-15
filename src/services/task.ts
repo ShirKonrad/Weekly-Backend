@@ -73,6 +73,7 @@ export async function updateAssignments(
         assignment: assignments.find(
           (assignment) => assignment.taskId === task.id
         )?.assignment,
+        assignmentLastUpdate: new Date()
       };
     });
 

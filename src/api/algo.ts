@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { AlgorithmError } from '../errors/algorithmError'
 import { TaskAssignment } from '../helpers/types'
 import { Event } from '../models/event'
 import { ITask, Task } from '../models/task'
@@ -44,8 +45,6 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], dayHou
 
         })
         .catch((err) => {
-            // console.error(err)
-            // return err;
-            throw new AxiosError()
+            throw new AlgorithmError(err?.response?.data)
         })
 }

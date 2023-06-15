@@ -21,7 +21,7 @@ app.all("*", () => {
 
 // A job that is running at 2:00AM every day
 cron.schedule("0 0 2 * * *", function () {
-    console.log("---------------------");
+    console.log("-------------------------");
     console.log("running the job.. time: " + new Date().toLocaleString());
     assignmentsUpdate()
 });

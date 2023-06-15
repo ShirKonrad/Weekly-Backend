@@ -34,7 +34,7 @@ router.post("", async (req: Request, res: Response) => {
 
   const userId = getUserId(req);
 
-  console.log(newTasks);
+  // console.log(newTasks);
 
   try {
     if (newTasks && newTasks.length > 0) {
@@ -44,7 +44,7 @@ router.post("", async (req: Request, res: Response) => {
       await saveEvents(newEvents, userId);
     }
   } catch (err) {
-    console.error(err);
+    console.log(err);
     throw new ClientMessageError(clientErrors.SAVING_TASKS_FAILED);
   }
 
