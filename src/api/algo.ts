@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { AlgorithmError } from '../errors/algorithmError'
 import { TaskAssignment } from '../helpers/types'
 import { Event } from '../models/event'
 import { ITask, Task } from '../models/task'
@@ -9,15 +10,15 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], dayHou
     const tasksJson = tasks.map((task) => {
         return {
             ...task,
-            dueDate: task.dueDate.toLocaleString()
+            dueDate: task.dueDate.toLocaleString("he-IL")
         }
     })
 
     const eventsJson = events.map((event) => {
         return {
             ...event,
-            startTime: event.startTime.toLocaleString(),
-            endTime: event.endTime.toLocaleString()
+            startTime: event.startTime.toLocaleString("he-IL"),
+            endTime: event.endTime.toLocaleString("he-IL")
         }
     })
 
@@ -44,8 +45,6 @@ export const getTasksAssignments = async (tasks: Task[], events: Event[], dayHou
 
         })
         .catch((err) => {
-            // console.error(err)
-            // return err;
-            throw new AxiosError()
+            throw new AlgorithmError(err?.response?.data)
         })
 }

@@ -6,11 +6,14 @@ import { router } from "./routes"
 import cors from "cors";
 import { assignmentsUpdate } from "./services/job";
 const cron = require("node-cron");
+const compression = require("compression");
 
 const app = express();
 
+app.use(compression());
 app.use(express.json());
 app.use(cors());
+
 
 app.use(router);
 
@@ -21,7 +24,7 @@ app.all("*", () => {
 
 // A job that is running at 2:00AM every day
 cron.schedule("0 0 2 * * *", function () {
-    console.log("---------------------");
+    console.log("-------------------------");
     console.log("running the job.. time: " + new Date().toLocaleString());
     assignmentsUpdate()
 });
