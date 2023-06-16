@@ -46,7 +46,7 @@ export async function assignmentsUpdate() {
                     try {
                         const schedule = await generateSchedule(tasksToAssign, events, user.beginDayHour, user.endDayHour) as TaskAssignment[];
                         if (schedule?.length > 0) {
-                            const updatedTasks = await updateAssignments(schedule, user.id)
+                            const updatedTasks = await updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
                             console.log("Updated tasks for user: " + user.id)
                             numOfUpdatedUsers++;
                         }
@@ -60,10 +60,10 @@ export async function assignmentsUpdate() {
                 console.log("No update needed for user: " + user.id)
             }
         }
-        console.log("JOB FINISHED RUNNING")
-        console.log("Number of user updated: " + numOfUpdatedUsers)
-        console.log("---------------------------------------")
     }
+    console.log("JOB FINISHED RUNNING")
+    console.log("Number of user updated: " + numOfUpdatedUsers)
+    console.log("---------------------------------------")
 }
 
 // Check if there are any tasks that have not yet been done, their assignment has passed and their due date has not yet passed,

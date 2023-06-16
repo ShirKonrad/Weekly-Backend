@@ -54,8 +54,8 @@ export class Task extends BaseEntity {
     })
     priority: number;
 
-    @Column({ nullable: true })
-    assignment?: Date;
+    @Column({ type: Date, nullable: true })
+    assignment?: Date | null;
 
     @Column({ default: false })
     isDone: boolean;

@@ -1,4 +1,4 @@
-import { Between, In, MoreThanOrEqual } from "typeorm";
+import { Between, In, IsNull, MoreThanOrEqual, Not } from "typeorm";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { NotFoundError } from "../errors/notFoundError";
 import { TaskAssignment } from "../helpers/types";
@@ -15,13 +15,15 @@ export async function getById(taskId: number) {
 export async function getAllTasksByUserId(
   userId: number,
   withDone?: boolean,
-  withPastDueDate?: boolean
+  withPastDueDate?: boolean,
+  onlyWithAssignment?: boolean
 ) {
   return await Task.find({
     where: {
       user: { id: userId },
       dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
       isDone: withDone ? undefined : false,
+      assignment: onlyWithAssignment ? Not(IsNull()) : undefined
     },
     relations: ["tag"],
   });
@@ -35,6 +37,7 @@ export async function getAllTasksByUserIdAndDates(
   return await Task.find({
     where: {
       user: { id: userId },
+      isDone: false,
       assignment: Between(minDate, maxDate),
     },
     relations: ["tag"],
@@ -55,12 +58,21 @@ export async function saveTasks(tasks: ITask[], userId: number) {
 }
 
 export async function updateAssignments(
+  allTasksIdToUpdate: number[],
   assignments: TaskAssignment[],
   userId: number
 ) {
+  // const tasks = await Task.find({
+  //   where: {
+  //     id: In(assignments.map((assignment) => assignment.taskId)),
+  //     user: { id: userId },
+  //   },
+  //   relations: ["tag"],
+  // });
+
   const tasks = await Task.find({
     where: {
-      id: In(assignments.map((assignment) => assignment.taskId)),
+      id: In(allTasksIdToUpdate),
       user: { id: userId },
     },
     relations: ["tag"],
@@ -70,9 +82,7 @@ export async function updateAssignments(
     const tasksToSave = tasks.map((task) => {
       return {
         ...task,
-        assignment: assignments.find(
-          (assignment) => assignment.taskId === task.id
-        )?.assignment,
+        assignment: assignments.find((assignment) => assignment.taskId === task.id)?.assignment || null,
         assignmentLastUpdate: new Date()
       };
     });
