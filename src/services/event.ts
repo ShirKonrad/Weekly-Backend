@@ -12,11 +12,11 @@ export async function getById(eventId: number) {
   });
 }
 
-export async function getAllEventsByUserId(userId: number) {
+export async function getAllEventsByUserId(userId: number, withPastStartTime?: boolean) {
   return await Event.find({
     where: {
       user: { id: userId },
-      startTime: MoreThanOrEqual(new Date()),
+      startTime: withPastStartTime ? undefined : MoreThanOrEqual(new Date()),
     },
     relations: ["tag"],
   });
