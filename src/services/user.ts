@@ -39,6 +39,14 @@ export async function updateUser(userId: number, firstName: string, lastName: st
     });
 }
 
+export async function updateUserResetToken(userId: number, resetToken: string) {
+    return await User.update(userId, {resetToken})
+}
+
+export async function updateUserPassword(userId: number, password: string) {
+    return await User.update(userId, {password})
+}
+
 export async function getAllUsers() {
     return await User.find();
 }
