@@ -45,16 +45,18 @@ export async function assignmentsUpdate() {
                 if (tasksToAssign?.length > 0) {
                     try {
                         const schedule = await generateSchedule(tasksToAssign, events, user.beginDayHour, user.endDayHour) as TaskAssignment[];
-                        if (schedule?.length > 0) {
-                            const updatedTasks = await updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
-                            console.log("Updated tasks for user: " + user.id)
-                            numOfUpdatedUsers++;
-                        }
+                        // if (schedule?.length > 0) {
+                        const updatedTasks = await updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
+                        console.log("Updated tasks for user: " + user.id)
+                        numOfUpdatedUsers++;
+                        // }
                     } catch (err) {
                         console.log("Failed to update tasks for user: " + user.id)
                         console.log(err);
                         // new BadRequestError("Generating schedule failed")
                     }
+                } else {
+                    console.log("No update needed for user: " + user.id)
                 }
             } else {
                 console.log("No update needed for user: " + user.id)

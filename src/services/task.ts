@@ -4,6 +4,10 @@ import { NotFoundError } from "../errors/notFoundError";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
+import { addHours, addDays } from 'date-fns';
+import { getAllEventsByUserIdAndDates } from "./event";
+import { checkAssignmentTimeValid, checkScheduleItemsOverlap } from "../helpers/functions";
+import { ValidationError } from "../errors/validationError";
 
 export async function getById(taskId: number) {
   return await Task.findOne({
@@ -62,13 +66,6 @@ export async function updateAssignments(
   assignments: TaskAssignment[],
   userId: number
 ) {
-  // const tasks = await Task.find({
-  //   where: {
-  //     id: In(assignments.map((assignment) => assignment.taskId)),
-  //     user: { id: userId },
-  //   },
-  //   relations: ["tag"],
-  // });
 
   const tasks = await Task.find({
     where: {
@@ -118,8 +115,19 @@ export async function updateTask(newTask: ITask, userId: number) {
   });
 
   if (task) {
-
-    //TODO: check assignment not overlap
+    // If assigment updated, check that it is valid with the schedule
+    console.log(newTask)
+    console.log(task)
+    if (newTask.assignment && newTask.assignment !== null) {
+      newTask.assignment = new Date(newTask.assignment);
+      newTask.estTime = parseInt(newTask.estTime.toString())
+      if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() || newTask.estTime !== task.estTime) {
+        const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId)
+        if (validationMessage) {
+          throw new ValidationError(validationMessage)
+        }
+      }
+    }
 
     task.title = newTask.title;
     task.location = newTask.location;
