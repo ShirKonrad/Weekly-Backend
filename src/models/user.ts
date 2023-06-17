@@ -19,10 +19,13 @@ export class User extends BaseEntity {
     @Column()
     password: string;
 
-    @Column()
+    @Column({ nullable: true })
+    resetToken: string;
+
+    @Column({ default: 0 })
     beginDayHour: number;
 
-    @Column()
+    @Column({ default: 0 })
     endDayHour: number;
     
     @OneToMany(() => Tag, (tag) => tag.user)
