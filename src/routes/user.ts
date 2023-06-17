@@ -127,7 +127,7 @@ router.put("/", async (req: Request, res: Response) => {
     if (tasks.find(task => task.assignment && 
                           (task.assignment.getHours() + task.estTime > endDayHour ||
                            task.assignment?.getHours() < beginDayHour))) {
-      throw new UserError("You tasks assignment doesn't match your new hours");
+      throw new UserError("Your tasks assignment doesn't match your new hours");
     }
   }
 
@@ -149,11 +149,8 @@ router.put("/", async (req: Request, res: Response) => {
           )) as TaskAssignment[];
           
           if (schedule?.length > 0) {
-            const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, dbUserId);
-            const assignedTasks = updatedTasks?.filter((task) => task.assignment !== null);
-            const notAssignedTasks = updatedTasks?.filter((task) => task.assignment === null)
-            return res.status(200).send({ assignedTasks: assignedTasks, notAssignedTasks: notAssignedTasks });
-            // return res.status(200).send(user);
+            await updateAssignments(tasks.map((task) => task.id), schedule, dbUserId);
+            return res.status(200).send(user);
           }
         } catch (err) {
           console.error(err);
