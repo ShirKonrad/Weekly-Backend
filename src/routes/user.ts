@@ -12,6 +12,12 @@ import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { InternalServerError } from "../errors/internalServerError";
 import { getUserId } from "../helpers/currentUser";
+import { getAllTasksByUserId, updateAssignments } from "../services/task";
+import { getAllEventsByUserId } from "../services/event";
+import { generateSchedule } from "../services/schedule";
+import { TaskAssignment } from "../helpers/types";
+import { ClientMessageError } from "../errors/clientMessageError";
+import { clientErrors } from "../helpers/constants";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -106,10 +112,23 @@ router.post(
 
 router.put("/", async (req: Request, res: Response) => {
   const { id, firstName, lastName, beginDayHour, endDayHour } = req.body.user;
-  const currUserId = getUserId(req);
+  const generateAlgo = req.body.generateAlgo;
+  const dbUserId = getUserId(req);
 
-  if (parseInt(currUserId) !== id) {
+  if (parseInt(dbUserId) !== id) {
     throw new UserError("You can only update your own user!");
+  }
+
+  // get all the user's tasks and events that their due date has not passed
+  const tasks = await getAllTasksByUserId(dbUserId, false, false, true);
+  const events = await getAllEventsByUserId(dbUserId);
+  
+  if(!generateAlgo) {
+    if (tasks.find(task => task.assignment && 
+                          (task.assignment.getHours() + task.estTime > endDayHour ||
+                           task.assignment?.getHours() < beginDayHour))) {
+      throw new UserError("You tasks assignment doesn't match your new hours");
+    }
   }
 
   const user = await updateUser(
@@ -118,10 +137,37 @@ router.put("/", async (req: Request, res: Response) => {
     lastName,
     beginDayHour,
     endDayHour
-  ).then((user) => {
-    return res.status(200).send(user);
-  });
+  ).then(async (user) => {
+    if(generateAlgo) {
+      if (tasks?.length > 0) {
+        try {
+          const schedule = (await generateSchedule(
+            tasks,
+            events,
+            beginDayHour,
+            endDayHour
+          )) as TaskAssignment[];
+          
+          if (schedule?.length > 0) {
+            const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, dbUserId);
+            const assignedTasks = updatedTasks?.filter((task) => task.assignment !== null);
+            const notAssignedTasks = updatedTasks?.filter((task) => task.assignment === null)
+            return res.status(200).send({ assignedTasks: assignedTasks, notAssignedTasks: notAssignedTasks });
+            // return res.status(200).send(user);
+          }
+        } catch (err) {
+          console.error(err);
+          throw new ClientMessageError(clientErrors.GENERATE_SCHEDULE_FAILED);
+        }
+      } else {
+        return res.status(200).send("no tasks to schedule");
+      }
+    } else {
+      return res.status(200).send(user);
+    }
+  })
 });
+
 
 // const { token } = req.headers;
 // const id = jwt.verify(token, process.env.SECRET_KEY);
