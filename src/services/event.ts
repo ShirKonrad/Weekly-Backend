@@ -1,7 +1,8 @@
 import { Between, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
-import { title } from "process";
 import { getTagById } from "./tag";
+import { checkAssignmentTimeValid } from "../helpers/functions";
+import { ValidationError } from "../errors/validationError";
 
 export async function getById(eventId: number) {
   return await Event.findOne({
@@ -12,11 +13,11 @@ export async function getById(eventId: number) {
   });
 }
 
-export async function getAllEventsByUserId(userId: number) {
+export async function getAllEventsByUserId(userId: number, withPastStartTime?: boolean) {
   return await Event.find({
     where: {
       user: { id: userId },
-      startTime: MoreThanOrEqual(new Date()),
+      startTime: withPastStartTime ? undefined : MoreThanOrEqual(new Date()),
     },
     relations: ["tag"],
   });
@@ -58,8 +59,16 @@ export async function updateEvent(newEvent: IEvent, userId: number) {
   });
 
   if (event) {
-
-    //TODO: check time not overlap
+    // If event time updated, check that it is valid with the schedule
+    newEvent.startTime = new Date(newEvent.startTime);
+    newEvent.endTime = new Date(newEvent.endTime);
+    if (newEvent.startTime.toLocaleString() !== event.startTime.toLocaleString() ||
+      newEvent.endTime.toLocaleString() !== event.endTime.toLocaleString()) {
+      const validationMessage = await checkAssignmentTimeValid(newEvent.id, newEvent.startTime, newEvent.endTime, false, userId)
+      if (validationMessage) {
+        throw new ValidationError(validationMessage)
+      }
+    }
 
     event.title = newEvent.title;
     event.location = newEvent.location;

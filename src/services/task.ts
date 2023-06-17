@@ -1,9 +1,13 @@
-import { Between, In, MoreThanOrEqual } from "typeorm";
+import { Between, In, IsNull, MoreThanOrEqual, Not } from "typeorm";
 import { DataNotFoundError } from "../errors/dataNotFoundError";
 import { NotFoundError } from "../errors/notFoundError";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
+import { addHours, addDays } from 'date-fns';
+import { getAllEventsByUserIdAndDates } from "./event";
+import { checkAssignmentTimeValid, checkScheduleItemsOverlap } from "../helpers/functions";
+import { ValidationError } from "../errors/validationError";
 
 export async function getById(taskId: number) {
   return await Task.findOne({
@@ -15,13 +19,15 @@ export async function getById(taskId: number) {
 export async function getAllTasksByUserId(
   userId: number,
   withDone?: boolean,
-  withPastDueDate?: boolean
+  withPastDueDate?: boolean,
+  onlyWithAssignment?: boolean
 ) {
   return await Task.find({
     where: {
       user: { id: userId },
       dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
       isDone: withDone ? undefined : false,
+      assignment: onlyWithAssignment ? Not(IsNull()) : undefined
     },
     relations: ["tag"],
   });
@@ -35,6 +41,7 @@ export async function getAllTasksByUserIdAndDates(
   return await Task.find({
     where: {
       user: { id: userId },
+      isDone: false,
       assignment: Between(minDate, maxDate),
     },
     relations: ["tag"],
@@ -55,12 +62,14 @@ export async function saveTasks(tasks: ITask[], userId: number) {
 }
 
 export async function updateAssignments(
+  allTasksIdToUpdate: number[],
   assignments: TaskAssignment[],
   userId: number
 ) {
+
   const tasks = await Task.find({
     where: {
-      id: In(assignments.map((assignment) => assignment.taskId)),
+      id: In(allTasksIdToUpdate),
       user: { id: userId },
     },
     relations: ["tag"],
@@ -70,9 +79,7 @@ export async function updateAssignments(
     const tasksToSave = tasks.map((task) => {
       return {
         ...task,
-        assignment: assignments.find(
-          (assignment) => assignment.taskId === task.id
-        )?.assignment,
+        assignment: assignments.find((assignment) => assignment.taskId === task.id)?.assignment || null,
         assignmentLastUpdate: new Date()
       };
     });
@@ -108,8 +115,17 @@ export async function updateTask(newTask: ITask, userId: number) {
   });
 
   if (task) {
-
-    //TODO: check assignment not overlap
+    // If assigment updated, check that it is valid with the schedule
+    if (newTask.assignment && newTask.assignment !== null) {
+      newTask.assignment = new Date(newTask.assignment);
+      newTask.estTime = parseInt(newTask.estTime.toString())
+      if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() || newTask.estTime !== task.estTime) {
+        const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId)
+        if (validationMessage) {
+          throw new ValidationError(validationMessage)
+        }
+      }
+    }
 
     task.title = newTask.title;
     task.location = newTask.location;

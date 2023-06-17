@@ -5,8 +5,8 @@ import { clientErrors } from "../helpers/constants";
 import { getUserId } from "../helpers/currentUser";
 import { TaskAssignment } from "../helpers/types";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
-import { IEvent } from "../models/event";
-import { ITask } from "../models/task";
+import { Event, IEvent } from "../models/event";
+import { ITask, Task } from "../models/task";
 import {
   getAllEventsByUserId,
   getAllEventsByUserIdAndDates,
@@ -60,13 +60,14 @@ router.post("", async (req: Request, res: Response) => {
       const schedule = (await generateSchedule(
         tasks,
         events,
-        user?.beginDayHour || 9,
-        user?.endDayHour || 18
+        user?.beginDayHour || 0,
+        user?.endDayHour || 0
       )) as TaskAssignment[];
       if (schedule?.length > 0) {
-        const updatedTasks = await updateAssignments(schedule, userId);
-        const notAssignedTasks = tasks.filter((task) => !(updatedTasks?.map((updatedTask) => updatedTask.id).includes(task.id)))
-        return res.status(200).send({ assignedTasks: updatedTasks, notAssignedTasks: notAssignedTasks });
+        const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, userId);
+        const assignedTasks = updatedTasks?.filter((task) => task.assignment !== null);
+        const notAssignedTasks = updatedTasks?.filter((task) => task.assignment === null)
+        return res.status(200).send({ assignedTasks: assignedTasks, notAssignedTasks: notAssignedTasks });
       }
     } catch (err) {
       console.error(err);
@@ -78,50 +79,60 @@ router.post("", async (req: Request, res: Response) => {
 });
 
 router.get("/week", async (req: Request, res: Response) => {
-  // Searching for the schedulw only if there is a date range from the client.
+
+  const userId = getUserId(req);
+
+  let tasks: Task[] = [];
+  let events: Event[] = [];
+
+  // Selecting the tasks and the enevts separately.
+  // If there is a date range from the client, select only in the given dates, otherwise select all
   if (req?.query?.minDate && req?.query?.maxDate) {
     const minDate = new Date(req?.query?.minDate.toString());
     const maxDate = new Date(req?.query?.maxDate.toString());
-
-    const userId = getUserId(req);
-
-    // Selecting the tasks and the enevts separately.
-    const tasks = await getAllTasksByUserIdAndDates(userId, minDate, maxDate);
-    const events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
-
-    // Building a list of schedule entities.
-    const tasksFormatted = tasks?.map((task) => {
-      // Returning only the tasks that are assigned.
-      if (task.assignment) {
-        const endTime = new Date(task?.assignment);
-        endTime.setHours(endTime.getHours() + task.estTime);
-
-        return {
-          id: task.id,
-          title: task.title,
-          startTime: task.assignment,
-          endTime: endTime,
-          tag: task.tag,
-          isTask: true,
-        };
-      }
-    });
-
-    const eventsFormatted = events?.map((event) => {
-      return {
-        id: event.id,
-        title: event.title,
-        startTime: event.startTime,
-        endTime: event.endTime,
-        tag: event.tag,
-        isTask: false,
-      };
-    });
-
-    return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
+    tasks = await getAllTasksByUserIdAndDates(userId, minDate, maxDate);
+    events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
   } else {
-    throw new BadRequestError("No dates range");
+    tasks = await getAllTasksByUserId(userId, false, true, true);
+    events = await getAllEventsByUserId(userId, true);
   }
+
+  // const tasks = await getAllTasksByUserIdAndDates(userId, minDate, maxDate);
+  // const events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
+
+  // Building a list of schedule entities.
+  const tasksFormatted = tasks?.map((task) => {
+    // Returning only the tasks that are assigned.
+    if (task.assignment) {
+      const endTime = new Date(task?.assignment);
+      endTime.setHours(endTime.getHours() + task.estTime);
+
+      return {
+        id: task.id,
+        title: task.title,
+        startTime: task.assignment,
+        endTime: endTime,
+        tag: task.tag,
+        isTask: true,
+      };
+    }
+  });
+
+  const eventsFormatted = events?.map((event) => {
+    return {
+      id: event.id,
+      title: event.title,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      tag: event.tag,
+      isTask: false,
+    };
+  });
+
+  return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
+  // } else {
+  //   throw new BadRequestError("No dates range");
+  // }
 });
 
 export { router as scheduleRouter };
