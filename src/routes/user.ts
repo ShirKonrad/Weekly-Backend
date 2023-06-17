@@ -4,9 +4,9 @@ import {
   getUserByEmail,
   getUserById,
   updateUser,
+  updateUserPassword,
+  updateUserResetToken,
 } from "../services/user";
-import { DataNotFoundError } from "../errors/dataNotFoundError";
-import { DatabaseConnectionError } from "../errors/databaseConnectionError";
 import { UserError } from "../errors/userError";
 import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
@@ -20,33 +20,10 @@ import { ClientMessageError } from "../errors/clientMessageError";
 import { clientErrors } from "../helpers/constants";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const randToken = require('rand-token');
+import { emailHandler } from "../helpers/emailHandler";
 
 const router = wrapAsyncRouter();
-
-// const cleanUserObject = (user) => {
-//     delete user.password;
-//     delete user.card_number;
-//     delete user.token;
-//     delete user.card_expiration_year;
-//     delete user.card_expiration_month;
-//     return user;
-// };
-
-// router.get("/:id(\\d+)", async (req: Request, res: Response) => {
-//   const { id } = req.params;
-
-//   try {
-//     const user = await getUserById(parseInt(id));
-
-//     if (user) {
-//       return res.status(200).send(user);
-//     } else {
-//       throw new DataNotFoundError("User not found");
-//     }
-//   } catch (err) {
-//     throw new DatabaseConnectionError();
-//   }
-// });
 
 router.post("/register", async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, beginDayHour, endDayHour } =
@@ -70,9 +47,6 @@ router.post("/register", async (req: Request, res: Response) => {
       const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);
       return res.status(200).send({ token, user: addedNewUser });
     });
-    //   .catch((error) => {
-    //     throw new DatabaseConnectionError();
-    //   });
   }
 });
 
@@ -165,55 +139,60 @@ router.put("/", async (req: Request, res: Response) => {
   })
 });
 
+router.post('/resetPassword', async (req: Request, res: Response) => {
+  const { email } = req.body.params;
 
-// const { token } = req.headers;
-// const id = jwt.verify(token, process.env.SECRET_KEY);
-// const { token } = req.headers;
-// const id = jwt.verify(token, process.env.SECRET_KEY);
+  let dbUser = await getUserByEmail(email);
 
-// const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
-// const { email, username, photo, cardNumber, expirationMonth, expirationYear } = req.body;
+  if (!dbUser) {
+    throw new UserError("Check again the email, seems like it doesn't exist in Weekly");
+  } else {
+    const resetToken = randToken.generate(20);
+    const sent = await emailHandler(email, resetToken);
+    if (sent === 1) {
+      await updateUserResetToken(dbUser.id, resetToken)
+      const retUser = {
+        id: dbUser.id
+      }
+      return res.status(200).send({ user: retUser });
+    } else {
+      throw new UserError("Could not send a reset email");
+    }
+  }
+});
 
-// try {
-//     const user = await sequelize.models.users.findOne({ where: { id } });
-//     if (!user) {
-//         res.status(500).send({ message: `Could not update. User with id: ${id} does not exist` })
-//     } else {
-//         const valuesToUpdate = {
-//             ...shouldUpdate(username, user.username) && {username},
-//             ...shouldUpdate(email, user.email) && {email},
-//             ...shouldUpdate(photo, user.photo) && {photo},
-//             ...shouldUpdate(cardNumber, user.photo) && { card_number: cardNumber },
-//             ...shouldUpdate(expirationMonth, user.card_expiration_year) && { card_expiration_month: expirationMonth },
-//             ...shouldUpdate(expirationYear, user.card_expiration_year) && { card_expiration_year: expirationYear }
-//         }
-//         const columnNamesToUpdate = Object.keys(valuesToUpdate);
-//         if (columnNamesToUpdate.length === 0) return res.status(200).send({ message: `No values were updated`, updatedValues: columnNamesToUpdate });
-//         user.set(valuesToUpdate);
-//         const updatedUser = await user.save();
+router.post('/validateToken', async (req: Request, res: Response) => {
+    const { id, resetToken } = req.body.params;
 
-//         return res.status(200).send({ message: `Successfully updated the following values: ${columnNamesToUpdate.join(', ')}`, updatedValues: columnNamesToUpdate, user: cleanUserObject(updatedUser.dataValues) });
-//     }
-// } catch (err) {
-//     console.log(err);
-//     res.status(err.status || 500).send({ message: `Could not update. An error occurred while trying to update user with id: ${id}` });
-// }
-// });
+    const dbUser = await getUserById(id);
 
-// router.post('/validateToken', async (req: Request, res: Response, next) => {
-//     const { token, id } = req.body;
+    if (dbUser) {
+        if (dbUser.resetToken === resetToken) {
+          return res.sendStatus(200);
+        } else {
+          throw new UnauthorizedError("token is incorrect")
+        }
+    } else {
+      throw new UserError("User is not registered, Sign Up first");
+    }
+});
 
-//     const user = await getUserById(id);
+router.put('/updatePassword', async (req: Request, res: Response, next: NextFunction) => {
+  const { id, password } = req.body.params;
 
-//     if (user) {
-//         if (user.token === token) {
-//             return res.sendStatus(200);
-//         } else {
-//             next(new UnauthorizedError())
-//         }
-//     } else {
-//         return res.status(404).send('user is not registered');
-//     }
-// });
+  let dbUser = await getUserById(id);
+
+  if (dbUser) {
+    let hashedPassword = bcrypt.hashSync(password, 10);
+    await updateUserPassword(dbUser.id, hashedPassword)
+      .then(() => {
+        const token = jwt.sign(dbUser!.id, process.env.SECRET_KEY);
+        return res.status(200).send({ token, user: dbUser });
+      });
+  } else {
+    throw new UserError("User is not registered, Sign Up first");
+  }
+});
+
 
 export { router as userRouter };

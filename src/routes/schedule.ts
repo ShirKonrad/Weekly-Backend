@@ -60,8 +60,8 @@ router.post("", async (req: Request, res: Response) => {
       const schedule = (await generateSchedule(
         tasks,
         events,
-        user?.beginDayHour || 9,
-        user?.endDayHour || 18
+        user?.beginDayHour || 0,
+        user?.endDayHour || 0
       )) as TaskAssignment[];
       if (schedule?.length > 0) {
         const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, userId);

@@ -56,6 +56,11 @@ export function overlap(startTime1: Date, endTime1: Date, startTime2: Date, endT
 }
 
 export function isOutsideDayHours(startTime: Date, endTime: Date, beginDayHour?: number, endDayHour?: number) {
+
+    if (beginDayHour === 0 && endDayHour === 0) {
+        return false
+    }
+
     if (beginDayHour !== undefined && endDayHour !== undefined) {
         return (startTime.getHours() < beginDayHour ||
             startTime.getHours() >= endDayHour ||

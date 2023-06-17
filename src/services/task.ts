@@ -116,8 +116,6 @@ export async function updateTask(newTask: ITask, userId: number) {
 
   if (task) {
     // If assigment updated, check that it is valid with the schedule
-    console.log(newTask)
-    console.log(task)
     if (newTask.assignment && newTask.assignment !== null) {
       newTask.assignment = new Date(newTask.assignment);
       newTask.estTime = parseInt(newTask.estTime.toString())
