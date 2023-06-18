@@ -135,7 +135,7 @@ router.post('/validateToken', async (req: Request, res: Response) => {
     }
 });
 
-router.put('/updatePassword', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/updatePassword', async (req: Request, res: Response) => {
   const { id, password } = req.body.params;
 
   let dbUser = await getUserById(id);
@@ -152,5 +152,29 @@ router.put('/updatePassword', async (req: Request, res: Response, next: NextFunc
   }
 });
 
+router.post('/logInGoogle', async (req: Request, res: Response) => {
+  let dbUser = await getUserByEmail(req.body.user.email);
+
+  if (dbUser) {
+    const token = jwt.sign(dbUser?.id, process.env.SECRET_KEY);
+    const retUser = {
+      id: dbUser?.id,
+      firstName: dbUser?.firstName,
+      lastName: dbUser?.lastName,
+      email: dbUser?.email,
+      beginDayHour: dbUser?.beginDayHour,
+      endDayHour: dbUser?.endDayHour,
+    };
+    return res.status(200).send({ token, user: retUser });
+  } else {
+    const {firstName, lastName, email} = req.body.user;
+    await createUser(
+      firstName, lastName, email
+    ).then((addedNewUser) => {
+      const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);
+      return res.status(200).send({ token, user: addedNewUser });
+    });
+  }
+})
 
 export { router as userRouter };
