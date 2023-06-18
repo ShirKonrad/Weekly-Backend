@@ -16,7 +16,7 @@ export async function getUserByEmail(email: string) {
     });
 }
 
-export async function createUser(firstName: string, lastName: string, email: string, password: string, beginDayHour: number, endDayHour: number) {
+export async function createUser(firstName: string, lastName: string, email: string, password?: string, beginDayHour?: number, endDayHour?: number) {
     const user = await User.create({
         firstName,
         lastName,
@@ -37,6 +37,14 @@ export async function updateUser(userId: number, firstName: string, lastName: st
         beginDayHour,
         endDayHour
     });
+}
+
+export async function updateUserResetToken(userId: number, resetToken: string) {
+    return await User.update(userId, {resetToken})
+}
+
+export async function updateUserPassword(userId: number, password: string) {
+    return await User.update(userId, {password})
 }
 
 export async function getAllUsers() {

@@ -75,6 +75,8 @@ function needsUpdate(tasks: Task[]): boolean {
     return task !== undefined;
 }
 
+// Get all task that are in the same day as NOW and start after it
 function getAllTodayTasks(tasks: Task[]) {
-    return tasks.filter((task) => task.assignment?.toLocaleDateString() === NOW.toLocaleDateString())
+    return tasks.filter((task) => task.assignment &&
+        (task.assignment?.toLocaleDateString() === NOW.toLocaleDateString() && task.assignment >= NOW))
 }
