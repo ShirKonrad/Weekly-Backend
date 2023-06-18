@@ -14,6 +14,8 @@ module.exports = {
         POSTGRES_PASSWORD: "bartar20@CS",
         MICRO_SERVICE_URL: "http://weekly.cs.colman.ac.il:5000",
         SECRET_KEY: "weeklysecret",
+        EMAIL: "myyweeklyy@gmail.com",
+        EMAIL_PASSWORD: "wknjahuivkcikowe",
       },
       env_production: {
         PORT: 80,
