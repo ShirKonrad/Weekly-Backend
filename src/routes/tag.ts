@@ -10,6 +10,7 @@ import {
 } from "../services/tag";
 import { BadRequestError } from "../errors/badRequestError";
 import { Tag } from "../models/tag";
+import { deleteUsersTagById } from "../services/user";
 
 const router = wrapAsyncRouter();
 
@@ -32,9 +33,17 @@ router.post("/add", async (req: Request, res: Response) => {
 });
 
 router.put("/delete/:id", async (req: Request, res: Response) => {
-  const retVal = await deleteTag(parseInt(req.params.id));
+  const retVal = await deleteUsersTagById(
+    getUserId(req),
+    parseInt(req.params.id)
+  );
   if (retVal.affected && retVal.affected > 0) {
-    return res.status(200).send(true);
+    const retVal2 = await deleteTag(parseInt(req.params.id));
+    if (retVal2.affected && retVal.affected > 0) {
+      return res.status(200).send(true);
+    } else {
+      throw new BadRequestError("Deleting tag failed");
+    }
   } else {
     throw new BadRequestError("Deleting tag failed");
   }
