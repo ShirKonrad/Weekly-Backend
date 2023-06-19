@@ -1,7 +1,6 @@
 import { Between, MoreThanOrEqual } from "typeorm";
 import { Event, IEvent } from "../models/event";
 import { getTagById } from "./tag";
-import { checkAssignmentTimeValid } from "../helpers/functions";
 import { ValidationError } from "../errors/validationError";
 
 export async function getById(eventId: number) {
@@ -59,16 +58,16 @@ export async function updateEvent(newEvent: IEvent, userId: number) {
   });
 
   if (event) {
-    // If event time updated, check that it is valid with the schedule
-    newEvent.startTime = new Date(newEvent.startTime);
-    newEvent.endTime = new Date(newEvent.endTime);
-    if (newEvent.startTime.toLocaleString() !== event.startTime.toLocaleString() ||
-      newEvent.endTime.toLocaleString() !== event.endTime.toLocaleString()) {
-      const validationMessage = await checkAssignmentTimeValid(newEvent.id, newEvent.startTime, newEvent.endTime, false, userId)
-      if (validationMessage) {
-        throw new ValidationError(validationMessage)
-      }
-    }
+    // // If event time updated, check that it is valid with the schedule
+    // newEvent.startTime = new Date(newEvent.startTime);
+    // newEvent.endTime = new Date(newEvent.endTime);
+    // if (newEvent.startTime.toLocaleString() !== event.startTime.toLocaleString() ||
+    //   newEvent.endTime.toLocaleString() !== event.endTime.toLocaleString()) {
+    //   const validationMessage = await checkAssignmentTimeValid(newEvent.id, newEvent.startTime, newEvent.endTime, false, userId)
+    //   if (validationMessage) {
+    //     throw new ValidationError(validationMessage)
+    //   }
+    // }
 
     event.title = newEvent.title;
     event.location = newEvent.location;

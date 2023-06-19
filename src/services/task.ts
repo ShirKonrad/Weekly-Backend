@@ -1,12 +1,8 @@
 import { Between, In, IsNull, MoreThanOrEqual, Not } from "typeorm";
-import { DataNotFoundError } from "../errors/dataNotFoundError";
-import { NotFoundError } from "../errors/notFoundError";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
 import { getTagById } from "./tag";
-import { addHours, addDays } from 'date-fns';
-import { getAllEventsByUserIdAndDates } from "./event";
-import { checkAssignmentTimeValid, checkScheduleItemsOverlap } from "../helpers/functions";
+import { validateTask } from "../helpers/functions";
 import { ValidationError } from "../errors/validationError";
 
 export async function getById(taskId: number) {
@@ -115,26 +111,35 @@ export async function updateTask(newTask: ITask, userId: number) {
   });
 
   if (task) {
-    // If assigment updated, check that it is valid with the schedule
-    if (newTask.assignment && newTask.assignment !== null) {
-      newTask.assignment = new Date(newTask.assignment);
-      newTask.estTime = parseInt(newTask.estTime.toString())
-      if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() || newTask.estTime !== task.estTime) {
-        const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId)
-        if (validationMessage) {
-          throw new ValidationError(validationMessage)
-        }
-      }
+
+    const validationMessage = validateTask(newTask)
+    if (validationMessage) {
+      throw new ValidationError(validationMessage)
     }
+
+    // // If assigment, estimated time updated or due date, check that it is valid with the schedule
+    // if (newTask.assignment && newTask.assignment !== null) {
+    //   newTask.assignment = new Date(newTask.assignment);
+    //   newTask.estTime = parseInt(newTask.estTime.toString());
+    //   newTask.dueDate = new Date(newTask.dueDate);
+    //   if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() ||
+    //     newTask.estTime !== task.estTime ||
+    //     newTask.dueDate.toLocaleString() !== task.dueDate.toLocaleString()) {
+    //     const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId, newTask.dueDate)
+    //     if (validationMessage) {
+    //       throw new ValidationError(validationMessage)
+    //     }
+    //   }
+    // }
 
     task.title = newTask.title;
     task.location = newTask.location;
     task.description = newTask.description;
-    task.dueDate = newTask.dueDate;
+    task.dueDate = new Date(newTask.dueDate);
     task.estTime = newTask.estTime;
     task.priority = newTask.priority;
     task.tag = newTask.tag ? await getTagById(newTask.tag?.id, userId) || task.tag : null;
-    task.assignment = newTask.assignment;
+    task.assignment = newTask.assignment && new Date(newTask.assignment);
 
     return await Task.save(task);
   } else {
