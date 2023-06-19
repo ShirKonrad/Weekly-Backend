@@ -12,10 +12,11 @@ import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { InternalServerError } from "../errors/internalServerError";
 import { getUserId } from "../helpers/currentUser";
+import { emailHandler } from "../helpers/emailHandler";
+import { BadRequestError } from "../errors/badRequestError";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const randToken = require('rand-token');
-import { emailHandler } from "../helpers/emailHandler";
 
 const router = wrapAsyncRouter();
 
@@ -86,15 +87,19 @@ router.put("/", async (req: Request, res: Response) => {
     throw new UserError("You can only update your own user!");
   }
 
-  const user = await updateUser(
-    id,
-    firstName,
-    lastName,
-    beginDayHour,
-    endDayHour
-  ).then((user) => {
+  try {
+    const user = await updateUser(
+      id,
+      firstName,
+      lastName,
+      beginDayHour,
+      endDayHour
+    )
+  
     return res.status(200).send(user);
-  });
+  } catch(error) {
+    throw new BadRequestError("Something went wrong when updating the user");
+  }
 });
 
 router.post('/resetPassword', async (req: Request, res: Response) => {
@@ -178,3 +183,4 @@ router.post('/logInGoogle', async (req: Request, res: Response) => {
 })
 
 export { router as userRouter };
+
