@@ -39,6 +39,7 @@ export async function updateUser(userId: number, firstName: string, lastName: st
     });
 }
 
+<<<<<<< HEAD
 export async function updateUserResetToken(userId: number, resetToken: string) {
     return await User.update(userId, {resetToken})
 }
@@ -47,6 +48,8 @@ export async function updateUserPassword(userId: number, password: string) {
     return await User.update(userId, {password})
 }
 
+=======
+>>>>>>> accc7906b8b9c9780f7d728fd38c9d878442eb9b
 export async function getAllUsers() {
     return await User.find();
 }

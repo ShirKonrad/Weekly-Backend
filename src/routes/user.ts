@@ -12,11 +12,11 @@ import { UnauthorizedError } from "../errors/unauthorizedError";
 import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { InternalServerError } from "../errors/internalServerError";
 import { getUserId } from "../helpers/currentUser";
+import { emailHandler } from "../helpers/emailHandler";
+import { BadRequestError } from "../errors/badRequestError";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const randToken = require('rand-token');
-import { emailHandler } from "../helpers/emailHandler";
-import { BadRequestError } from "../errors/badRequestError";
 
 const router = wrapAsyncRouter();
 
@@ -183,3 +183,4 @@ router.post('/logInGoogle', async (req: Request, res: Response) => {
 })
 
 export { router as userRouter };
+
