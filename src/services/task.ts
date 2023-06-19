@@ -79,7 +79,7 @@ export async function updateAssignments(
     const tasksToSave = tasks.map((task) => {
       return {
         ...task,
-        assignment: assignments.find((assignment) => assignment.taskId === task.id)?.assignment || null,
+        assignment: assignments?.find((assignment) => assignment.taskId === task.id)?.assignment || null,
         assignmentLastUpdate: new Date()
       };
     });
