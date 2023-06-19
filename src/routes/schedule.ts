@@ -63,12 +63,12 @@ router.post("", async (req: Request, res: Response) => {
         user?.beginDayHour || 0,
         user?.endDayHour || 0
       )) as TaskAssignment[];
-      if (schedule?.length > 0) {
-        const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, userId);
-        const assignedTasks = updatedTasks?.filter((task) => task.assignment !== null);
-        const notAssignedTasks = updatedTasks?.filter((task) => task.assignment === null)
-        return res.status(200).send({ assignedTasks: assignedTasks, notAssignedTasks: notAssignedTasks });
-      }
+      // if (schedule?.length > 0) {
+      const updatedTasks = await updateAssignments(tasks.map((task) => task.id), schedule, userId);
+      const assignedTasks = updatedTasks?.filter((task) => task.assignment !== null);
+      const notAssignedTasks = updatedTasks?.filter((task) => task.assignment === null)
+      return res.status(200).send({ assignedTasks: assignedTasks, notAssignedTasks: notAssignedTasks });
+      // }
     } catch (err) {
       console.error(err);
       throw new ClientMessageError(clientErrors.GENERATE_SCHEDULE_FAILED);
