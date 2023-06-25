@@ -9,7 +9,7 @@ import { getAllUsers } from "./user";
 import { addHours } from 'date-fns';
 import { Event } from "../models/event";
 
-const NOW = new Date();
+// const NOW = new Date();
 
 export async function assignmentsUpdate() {
     console.log("JOB IS RUNNING")
@@ -68,12 +68,14 @@ export async function assignmentsUpdate() {
 // Check if there are any tasks that have not yet been done, their assignment has passed and their due date has not yet passed,
 // or they don't have an assignment. if there are any, return true
 function needsUpdate(tasks: Task[]): boolean {
+    const NOW = new Date();
     const task = tasks.find((task) => ((task.assignment && task.assignment < NOW) || !task.assignment) && task.dueDate > NOW)
     return task !== undefined;
 }
 
 // Get all task that are in the same day as NOW and start after it
 function getAllTodayTasks(tasks: Task[]) {
+    const NOW = new Date();
     return tasks.filter((task) => task.assignment &&
         (task.assignment?.toLocaleDateString() === NOW.toLocaleDateString() && task.assignment >= NOW))
 }
