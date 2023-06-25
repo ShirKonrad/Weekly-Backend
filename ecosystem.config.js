@@ -16,11 +16,13 @@ module.exports = {
         SECRET_KEY: "weeklysecret",
         EMAIL: "myyweeklyy@gmail.com",
         EMAIL_PASSWORD: "wknjahuivkcikowe",
+        EMAIL_HOST: "193.106.55.109",
+        EMAIL_PORT: 587,
       },
-      env_production: {
-        PORT: 80,
-        NODE_ENV: "production",
-      },
+      // env_production: {
+      //   PORT: 80,
+      //   NODE_ENV: "production",
+      // },
     },
   ],
 };
