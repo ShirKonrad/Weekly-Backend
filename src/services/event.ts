@@ -14,10 +14,11 @@ export async function getById(eventId: number) {
 
 export async function getAllEventsByUserId(userId: number, withPastStartTime?: boolean) {
   return await Event.find({
-    where: {
-      user: { id: userId },
-      startTime: withPastStartTime ? undefined : MoreThanOrEqual(new Date()),
-    },
+    where: [
+      { user: { id: userId }, startTime: withPastStartTime ? undefined : MoreThanOrEqual(new Date()) },
+      { user: { id: userId }, endTime: withPastStartTime ? undefined : MoreThanOrEqual(new Date()) },
+
+    ],
     relations: ["tag"],
   });
 }
