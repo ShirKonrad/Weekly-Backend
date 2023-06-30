@@ -27,9 +27,10 @@ export function generateTasksData(n: number = 1, overide = {}): Task[] {
 
 export function generateUserData(overide = {}) {
     return {
-        id: 1,
+        id: 0,
         firstName: "test user",
         lastName: "test user",
+        email: "test@gmail.com",
         beginDayHour: 9,
         endDayHour: 18,
         ...overide,
