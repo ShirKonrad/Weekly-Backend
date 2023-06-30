@@ -4,7 +4,7 @@ import { Task } from "../models/task";
 import { User } from "../models/user";
 import { getAllEventsByUserId } from "./event";
 import { generateSchedule } from "./schedule";
-import { getAllTasksByUserId, updateAssignments } from "./task";
+import { TaskService } from "./task";
 import { getAllUsers } from "./user";
 import { addHours } from 'date-fns';
 import { Event } from "../models/event";
@@ -19,7 +19,7 @@ export async function assignmentsUpdate() {
     // Go over all the users
     if (allUsers && allUsers?.length > 0) {
         for (const user of allUsers) {
-            const tasks = await getAllTasksByUserId(user.id);
+            const tasks = await TaskService.getAllTasksByUserId(user.id);
 
             // Check if there are tasks that meet the condition for update
             if (needsUpdate(tasks)) {
@@ -45,7 +45,7 @@ export async function assignmentsUpdate() {
                 if (tasksToAssign?.length > 0) {
                     try {
                         const schedule = await generateSchedule(tasksToAssign, events, user.beginDayHour, user.endDayHour) as TaskAssignment[];
-                        const updatedTasks = await updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
+                        const updatedTasks = await TaskService.updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
                         console.log("Updated tasks for user: " + user.id)
                         numOfUpdatedUsers++;
                     } catch (err) {

@@ -25,22 +25,6 @@ router.put("/:id", async (req: Request, res: Response) => {
   } else {
     return res.status(200).send(updatedEvent);
   }
-
-  // try {
-  //   const updatedEvent = await updateEvent(
-  //     req.body.event as Event,
-  //     getUserId(req)
-  //   );
-
-  //   if (!updatedEvent) {
-  //     throw new BadRequestError("Updating event failed");
-  //   } else {
-  //     return res.status(200).send(updateEvent);
-  //   }
-  // } catch (err: any) {
-  //   console.log(err);
-  //   throw new BadRequestError("Updating event failed");
-  // }
 });
 
 router.put("/delete/:id", async (req: Request, res: Response) => {

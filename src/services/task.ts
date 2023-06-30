@@ -5,148 +5,152 @@ import { getTagById } from "./tag";
 import { validateTask } from "../helpers/functions";
 import { ValidationError } from "../errors/validationError";
 
-export async function getById(taskId: number) {
-  return await Task.findOne({
-    where: { id: taskId },
-    relations: ["tag"],
-  });
-}
+export class TaskService {
 
-export async function getAllTasksByUserId(
-  userId: number,
-  withDone?: boolean,
-  withPastDueDate?: boolean,
-  onlyWithAssignment?: boolean
-) {
-  return await Task.find({
-    where: {
-      user: { id: userId },
-      dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
-      isDone: withDone ? undefined : false,
-      assignment: onlyWithAssignment ? Not(IsNull()) : undefined
-    },
-    relations: ["tag"],
-  });
-}
-
-export async function getAllTasksByUserIdAndDates(
-  userId: number,
-  minDate: Date,
-  maxDate: Date
-) {
-  return await Task.find({
-    where: {
-      user: { id: userId },
-      isDone: false,
-      assignment: Between(minDate, maxDate),
-    },
-    relations: ["tag"],
-  });
-}
-
-export async function saveTasks(tasks: ITask[], userId: number) {
-  const newTasks = tasks.map((task: ITask) => {
-    return Task.create({
-      ...task,
-      user: { id: userId },
-      tag: { id: task?.tag?.id },
-      isDone: task.isDone || false,
+  static getById = async (taskId: number) => {
+    return await Task.findOne({
+      where: { id: taskId },
+      relations: ["tag"],
     });
-  });
+  }
 
-  return await Task.save(newTasks);
-}
+  static getAllTasksByUserId = async (
+    userId: number,
+    withDone?: boolean,
+    withPastDueDate?: boolean,
+    onlyWithAssignment?: boolean
+  ) => {
+    return await Task.find({
+      where: {
+        user: { id: userId },
+        dueDate: withPastDueDate ? undefined : MoreThanOrEqual(new Date()),
+        isDone: withDone ? undefined : false,
+        assignment: onlyWithAssignment ? Not(IsNull()) : undefined
+      },
+      relations: ["tag"],
+    });
+  }
 
-export async function updateAssignments(
-  allTasksIdToUpdate: number[],
-  assignments: TaskAssignment[],
-  userId: number
-) {
+  static getAllTasksByUserIdAndDates = async (
+    userId: number,
+    minDate: Date,
+    maxDate: Date
+  ) => {
+    return await Task.find({
+      where: {
+        user: { id: userId },
+        isDone: false,
+        assignment: Between(minDate, maxDate),
+      },
+      relations: ["tag"],
+    });
+  }
 
-  const tasks = await Task.find({
-    where: {
-      id: In(allTasksIdToUpdate),
-      user: { id: userId },
-    },
-    relations: ["tag"],
-  });
-
-  if (tasks?.length > 0) {
-    const tasksToSave = tasks.map((task) => {
-      return {
+  static saveTasks = async (tasks: ITask[], userId: number) => {
+    const newTasks = tasks.map((task: ITask) => {
+      return Task.create({
         ...task,
-        assignment: assignments?.find((assignment) => assignment.taskId === task.id)?.assignment || null,
-        assignmentLastUpdate: new Date()
-      };
+        user: { id: userId },
+        tag: { id: task?.tag?.id },
+        isDone: task.isDone || false,
+      });
     });
 
-    return await Task.save(tasksToSave);
+    return await Task.save(newTasks);
   }
-}
 
-export async function setDone(taskId: number, userId: number) {
-  const task = await Task.findOne({
-    where: {
-      id: taskId,
-      user: { id: userId },
-    },
-    relations: ["tag"],
-  });
+  static async updateAssignments(
+    allTasksIdToUpdate: number[],
+    assignments: TaskAssignment[],
+    userId: number
+  ) {
 
-  if (task) {
-    task.isDone = !task.isDone;
-    return await Task.save(task);
-  } else {
-    return undefined;
-  }
-}
+    const tasks = await Task.find({
+      where: {
+        id: In(allTasksIdToUpdate),
+        user: { id: userId },
+      },
+      relations: ["tag"],
+    });
 
-export async function updateTask(newTask: ITask, userId: number) {
-  const task = await Task.findOne({
-    where: {
-      id: newTask.id,
-      user: { id: userId },
-    },
-    relations: ["tag"],
-  });
+    if (tasks?.length > 0) {
+      const tasksToSave = tasks.map((task) => {
+        return {
+          ...task,
+          assignment: assignments?.find((assignment) => assignment.taskId === task.id)?.assignment || null,
+          assignmentLastUpdate: new Date()
+        };
+      });
 
-  if (task) {
-
-    const validationMessage = validateTask(newTask)
-    if (validationMessage) {
-      throw new ValidationError(validationMessage)
+      return await Task.save(tasksToSave);
     }
-
-    // // If assigment, estimated time updated or due date, check that it is valid with the schedule
-    // if (newTask.assignment && newTask.assignment !== null) {
-    //   newTask.assignment = new Date(newTask.assignment);
-    //   newTask.estTime = parseInt(newTask.estTime.toString());
-    //   newTask.dueDate = new Date(newTask.dueDate);
-    //   if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() ||
-    //     newTask.estTime !== task.estTime ||
-    //     newTask.dueDate.toLocaleString() !== task.dueDate.toLocaleString()) {
-    //     const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId, newTask.dueDate)
-    //     if (validationMessage) {
-    //       throw new ValidationError(validationMessage)
-    //     }
-    //   }
-    // }
-
-    task.title = newTask.title;
-    task.location = newTask.location;
-    task.description = newTask.description;
-    task.dueDate = new Date(newTask.dueDate);
-    task.estTime = newTask.estTime;
-    task.priority = newTask.priority;
-    task.tag = newTask.tag ? await getTagById(newTask.tag?.id, userId) || task.tag : null;
-    task.assignment = newTask.assignment && new Date(newTask.assignment);
-
-    return await Task.save(task);
-  } else {
-    return undefined;
   }
-}
 
-export async function deleteTask(taskId: number) {
-  return Task.delete(taskId);
+  static setDone = async (taskId: number, userId: number) => {
+    const task = await Task.findOne({
+      where: {
+        id: taskId,
+        user: { id: userId },
+      },
+      relations: ["tag"],
+    });
+
+    if (task) {
+      task.isDone = !task.isDone;
+      return await Task.save(task);
+    } else {
+      return undefined;
+    }
+  }
+
+  static updateTask = async (newTask: ITask, userId: number) => {
+    const task = await Task.findOne({
+      where: {
+        id: newTask.id,
+        user: { id: userId },
+      },
+      relations: ["tag"],
+    });
+
+    if (task) {
+
+      const validationMessage = validateTask(newTask)
+      if (validationMessage) {
+        throw new ValidationError(validationMessage)
+      }
+
+      // // If assigment, estimated time updated or due date, check that it is valid with the schedule
+      // if (newTask.assignment && newTask.assignment !== null) {
+      //   newTask.assignment = new Date(newTask.assignment);
+      //   newTask.estTime = parseInt(newTask.estTime.toString());
+      //   newTask.dueDate = new Date(newTask.dueDate);
+      //   if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() ||
+      //     newTask.estTime !== task.estTime ||
+      //     newTask.dueDate.toLocaleString() !== task.dueDate.toLocaleString()) {
+      //     const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId, newTask.dueDate)
+      //     if (validationMessage) {
+      //       throw new ValidationError(validationMessage)
+      //     }
+      //   }
+      // }
+
+      task.title = newTask.title;
+      task.location = newTask.location;
+      task.description = newTask.description;
+      task.dueDate = new Date(newTask.dueDate);
+      task.estTime = newTask.estTime;
+      task.priority = newTask.priority;
+      task.tag = newTask.tag ? await getTagById(newTask.tag?.id, userId) || task.tag : null;
+      task.assignment = newTask.assignment && new Date(newTask.assignment);
+
+      return await Task.save(task);
+    } else {
+      return undefined;
+    }
+  }
+
+  static deleteTask = async (taskId: number) => {
+    return Task.delete(taskId);
+  }
+
 }

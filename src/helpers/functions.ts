@@ -1,7 +1,7 @@
 import { Event } from "../models/event";
 import { ITask, Task } from "../models/task";
 import { addHours, addDays } from 'date-fns';
-import { getAllTasksByUserIdAndDates } from "../services/task";
+import { TaskService } from "../services/task";
 import { getAllEventsByUserIdAndDates } from "../services/event";
 import { getUserById } from "../services/user";
 
