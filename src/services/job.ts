@@ -2,10 +2,10 @@ import { BadRequestError } from "../errors/badRequestError";
 import { TaskAssignment } from "../helpers/types";
 import { Task } from "../models/task";
 import { User } from "../models/user";
-import { getAllEventsByUserId } from "./event";
-import { generateSchedule } from "./schedule";
-import { getAllTasksByUserId, updateAssignments } from "./task";
-import { getAllUsers } from "./user";
+import { EventService } from "./event";
+import { ScheduleService } from "./schedule";
+import { TaskService } from "./task";
+import { UserService } from "./user";
 import { addHours } from 'date-fns';
 import { Event } from "../models/event";
 
@@ -13,13 +13,13 @@ import { Event } from "../models/event";
 
 export async function assignmentsUpdate() {
     console.log("JOB IS RUNNING")
-    const allUsers: User[] = await getAllUsers()
+    const allUsers: User[] = await UserService.getAllUsers()
     let numOfUpdatedUsers = 0;
 
     // Go over all the users
     if (allUsers && allUsers?.length > 0) {
         for (const user of allUsers) {
-            const tasks = await getAllTasksByUserId(user.id);
+            const tasks = await TaskService.getAllTasksByUserId(user.id);
 
             // Check if there are tasks that meet the condition for update
             if (needsUpdate(tasks)) {
@@ -31,7 +31,7 @@ export async function assignmentsUpdate() {
                 const todayTasks = getAllTodayTasks(tasks);
                 const tasksToAssign = tasks.filter((task) => !(todayTasks.map(todayTask => todayTask.id).includes(task.id)));
 
-                const events = await getAllEventsByUserId(user.id);
+                const events = await EventService.getAllEventsByUserId(user.id);
 
                 todayTasks.forEach((task) => events.push(
                     Event.create({
@@ -44,8 +44,8 @@ export async function assignmentsUpdate() {
 
                 if (tasksToAssign?.length > 0) {
                     try {
-                        const schedule = await generateSchedule(tasksToAssign, events, user.beginDayHour, user.endDayHour) as TaskAssignment[];
-                        const updatedTasks = await updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
+                        const schedule = await ScheduleService.generateSchedule(tasksToAssign, events, user.beginDayHour, user.endDayHour) as TaskAssignment[];
+                        const updatedTasks = await TaskService.updateAssignments(tasksToAssign.map((task) => task.id), schedule, user.id)
                         console.log("Updated tasks for user: " + user.id)
                         numOfUpdatedUsers++;
                     } catch (err) {
