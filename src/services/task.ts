@@ -1,7 +1,7 @@
 import { Between, In, IsNull, MoreThanOrEqual, Not } from "typeorm";
 import { TaskAssignment } from "../helpers/types";
 import { ITask, Task } from "../models/task";
-import { getTagById } from "./tag";
+import { TagService } from "./tag";
 import { validateTask } from "../helpers/functions";
 import { ValidationError } from "../errors/validationError";
 
@@ -114,25 +114,11 @@ export class TaskService {
 
     if (task) {
 
+      // Validate task
       const validationMessage = validateTask(newTask)
       if (validationMessage) {
         throw new ValidationError(validationMessage)
       }
-
-      // // If assigment, estimated time updated or due date, check that it is valid with the schedule
-      // if (newTask.assignment && newTask.assignment !== null) {
-      //   newTask.assignment = new Date(newTask.assignment);
-      //   newTask.estTime = parseInt(newTask.estTime.toString());
-      //   newTask.dueDate = new Date(newTask.dueDate);
-      //   if (newTask.assignment?.toLocaleString() !== task.assignment?.toLocaleString() ||
-      //     newTask.estTime !== task.estTime ||
-      //     newTask.dueDate.toLocaleString() !== task.dueDate.toLocaleString()) {
-      //     const validationMessage = await checkAssignmentTimeValid(newTask.id, newTask.assignment, addHours(newTask.assignment, newTask.estTime), true, userId, newTask.dueDate)
-      //     if (validationMessage) {
-      //       throw new ValidationError(validationMessage)
-      //     }
-      //   }
-      // }
 
       task.title = newTask.title;
       task.location = newTask.location;
@@ -140,7 +126,7 @@ export class TaskService {
       task.dueDate = new Date(newTask.dueDate);
       task.estTime = newTask.estTime;
       task.priority = newTask.priority;
-      task.tag = newTask.tag ? await getTagById(newTask.tag?.id, userId) || task.tag : null;
+      task.tag = newTask.tag ? await TagService.getTagById(newTask.tag?.id, userId) || task.tag : null;
       task.assignment = newTask.assignment && new Date(newTask.assignment);
 
       return await Task.save(task);

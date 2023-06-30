@@ -1,11 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import {
-  createUser,
-  getUserByEmail,
-  getUserById,
-  updateUser,
-  updateUserPassword,
-  updateUserResetToken,
+  UserService,
 } from "../services/user";
 import { UserError } from "../errors/userError";
 import { UnauthorizedError } from "../errors/unauthorizedError";
@@ -24,14 +19,14 @@ router.post("/register", async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, beginDayHour, endDayHour } =
     req.body.user;
 
-  let dbUser = await getUserByEmail(email);
+  let dbUser = await UserService.getUserByEmail(email);
 
   if (dbUser) {
     throw new UserError("An account with this email already exists");
   } else {
     let hashedPassword = bcrypt.hashSync(password, 10);
 
-    await createUser(
+    await UserService.createUser(
       firstName,
       lastName,
       email,
@@ -49,7 +44,7 @@ router.post(
   "/logIn",
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body.params;
-    let dbUser = await getUserByEmail(email);
+    let dbUser = await UserService.getUserByEmail(email);
 
     if (dbUser) {
       bcrypt.compare(password, dbUser.password, (err: any, result: any) => {
@@ -88,16 +83,16 @@ router.put("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await updateUser(
+    const user = await UserService.updateUser(
       id,
       firstName,
       lastName,
       beginDayHour,
       endDayHour
     )
-  
+
     return res.status(200).send(user);
-  } catch(error) {
+  } catch (error) {
     throw new BadRequestError("Something went wrong when updating the user");
   }
 });
@@ -105,7 +100,7 @@ router.put("/", async (req: Request, res: Response) => {
 router.post('/resetPassword', async (req: Request, res: Response) => {
   const { email } = req.body.params;
 
-  let dbUser = await getUserByEmail(email);
+  let dbUser = await UserService.getUserByEmail(email);
 
   if (!dbUser) {
     throw new UserError("Check again the email, seems like it doesn't exist in Weekly");
@@ -113,7 +108,7 @@ router.post('/resetPassword', async (req: Request, res: Response) => {
     const resetToken = randToken.generate(20);
     const sent = await emailHandler(email, resetToken);
     if (sent === 1) {
-      await updateUserResetToken(dbUser.id, resetToken)
+      await UserService.updateUserResetToken(dbUser.id, resetToken)
       const retUser = {
         id: dbUser.id
       }
@@ -125,29 +120,29 @@ router.post('/resetPassword', async (req: Request, res: Response) => {
 });
 
 router.post('/validateToken', async (req: Request, res: Response) => {
-    const { id, resetToken } = req.body.params;
+  const { id, resetToken } = req.body.params;
 
-    const dbUser = await getUserById(id);
+  const dbUser = await UserService.getUserById(id);
 
-    if (dbUser) {
-        if (dbUser.resetToken === resetToken) {
-          return res.sendStatus(200);
-        } else {
-          throw new UnauthorizedError("token is incorrect")
-        }
+  if (dbUser) {
+    if (dbUser.resetToken === resetToken) {
+      return res.sendStatus(200);
     } else {
-      throw new UserError("User is not registered, Sign Up first");
+      throw new UnauthorizedError("token is incorrect")
     }
+  } else {
+    throw new UserError("User is not registered, Sign Up first");
+  }
 });
 
 router.put('/updatePassword', async (req: Request, res: Response) => {
   const { id, password } = req.body.params;
 
-  let dbUser = await getUserById(id);
+  let dbUser = await UserService.getUserById(id);
 
   if (dbUser) {
     let hashedPassword = bcrypt.hashSync(password, 10);
-    await updateUserPassword(dbUser.id, hashedPassword)
+    await UserService.updateUserPassword(dbUser.id, hashedPassword)
       .then(() => {
         const token = jwt.sign(dbUser!.id, process.env.SECRET_KEY);
         return res.status(200).send({ token, user: dbUser });
@@ -158,7 +153,7 @@ router.put('/updatePassword', async (req: Request, res: Response) => {
 });
 
 router.post('/logInGoogle', async (req: Request, res: Response) => {
-  let dbUser = await getUserByEmail(req.body.user.email);
+  let dbUser = await UserService.getUserByEmail(req.body.user.email);
 
   if (dbUser) {
     const token = jwt.sign(dbUser?.id, process.env.SECRET_KEY);
@@ -172,8 +167,8 @@ router.post('/logInGoogle', async (req: Request, res: Response) => {
     };
     return res.status(200).send({ token, user: retUser });
   } else {
-    const {firstName, lastName, email} = req.body.user;
-    await createUser(
+    const { firstName, lastName, email } = req.body.user;
+    await UserService.createUser(
       firstName, lastName, email
     ).then((addedNewUser) => {
       const token = jwt.sign(addedNewUser.id, process.env.SECRET_KEY);

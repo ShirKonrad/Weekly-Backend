@@ -1,9 +1,5 @@
-import { Event } from "../models/event";
-import { ITask, Task } from "../models/task";
-import { addHours, addDays } from 'date-fns';
-import { TaskService } from "../services/task";
-import { getAllEventsByUserIdAndDates } from "../services/event";
-import { getUserById } from "../services/user";
+import { ITask } from "../models/task";
+import { addHours } from 'date-fns';
 
 export function validateTask(task: ITask) {
     // Check if the assignment is before the due date

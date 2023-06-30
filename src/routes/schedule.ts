@@ -8,13 +8,11 @@ import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 import { Event, IEvent } from "../models/event";
 import { ITask, Task } from "../models/task";
 import {
-  getAllEventsByUserId,
-  getAllEventsByUserIdAndDates,
-  saveEvents,
+  EventService,
 } from "../services/event";
-import { generateSchedule } from "../services/schedule";
+import { ScheduleService } from "../services/schedule";
 import { TaskService } from "../services/task";
-import { getUserById } from "../services/user";
+import { UserService } from "../services/user";
 
 const router = wrapAsyncRouter();
 
@@ -36,7 +34,7 @@ router.post("", async (req: Request, res: Response) => {
       await TaskService.saveTasks(newTasks, userId);
     }
     if (newEvents && newEvents.length > 0) {
-      await saveEvents(newEvents, userId);
+      await EventService.saveEvents(newEvents, userId);
     }
   } catch (err) {
     console.log(err);
@@ -45,14 +43,14 @@ router.post("", async (req: Request, res: Response) => {
 
   // get all the user's tasks and events that their due date has not passed
   const tasks = await TaskService.getAllTasksByUserId(userId);
-  const events = await getAllEventsByUserId(userId);
+  const events = await EventService.getAllEventsByUserId(userId);
 
   if (tasks?.length > 0) {
     try {
       // get the user in order to get his day hours
-      const user = await getUserById(userId);
+      const user = await UserService.getUserById(userId);
 
-      const schedule = (await generateSchedule(
+      const schedule = (await ScheduleService.generateSchedule(
         tasks,
         events,
         user?.beginDayHour || 0,
@@ -84,14 +82,11 @@ router.get("/week", async (req: Request, res: Response) => {
     const minDate = new Date(req?.query?.minDate.toString());
     const maxDate = new Date(req?.query?.maxDate.toString());
     tasks = await TaskService.getAllTasksByUserIdAndDates(userId, minDate, maxDate);
-    events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
+    events = await EventService.getAllEventsByUserIdAndDates(userId, minDate, maxDate);
   } else {
     tasks = await TaskService.getAllTasksByUserId(userId, false, true, true);
-    events = await getAllEventsByUserId(userId, true);
+    events = await EventService.getAllEventsByUserId(userId, true);
   }
-
-  // const tasks = await getAllTasksByUserIdAndDates(userId, minDate, maxDate);
-  // const events = await getAllEventsByUserIdAndDates(userId, minDate, maxDate);
 
   // Building a list of schedule entities.
   const tasksFormatted = tasks?.map((task) => {
@@ -123,9 +118,6 @@ router.get("/week", async (req: Request, res: Response) => {
   });
 
   return res.status(200).send([...tasksFormatted, ...eventsFormatted]);
-  // } else {
-  //   throw new BadRequestError("No dates range");
-  // }
 });
 
 export { router as scheduleRouter };
