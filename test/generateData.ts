@@ -1,3 +1,4 @@
+import { Tag } from "../src/models/tag";
 import { Event } from "../src/models/event";
 import { Task } from "../src/models/task";
 import { User } from "../src/models/user";
@@ -54,6 +55,26 @@ export function generateEventsData(n: number = 1, overide = {}): Event[] {
     },
     (_, i) => {
       return generateEventData({ id: i, ...overide }) as Event;
+    }
+  );
+}
+
+export function generateTagData(overide = {}): Tag {
+  return {
+    id: 1,
+    name: "task title",
+    color: "#DGR374",
+    ...overide,
+  } as Tag;
+}
+
+export function generateTagsData(n: number = 1, overide = {}): Tag[] {
+  return Array.from(
+    {
+      length: n,
+    },
+    (_, i) => {
+      return generateTagData({ id: i, ...overide }) as Tag;
     }
   );
 }

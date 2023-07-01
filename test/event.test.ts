@@ -1,7 +1,7 @@
-import { EventService } from "src/services/event";
-import { Event } from "../src/models/event";
 import { generateEventData, generateEventsData } from "./generateData";
 import * as currentUser from "../src/helpers/currentUser";
+import { DeleteResult } from "typeorm";
+import { EventService } from "../src/services/event";
 
 const request = require("supertest");
 const app = require("../src/server");
@@ -116,53 +116,42 @@ describe("Event Routes", () => {
     });
   });
 
-  //   describe("PUT /event/delete/:id", () => {
-  //     it("should delete an event and return success status code", async () => {
-  //       const updatedEvent = generateEventData();
+  describe("PUT /event/delete/:id", () => {
+    it("should delete an event and return success status code", async () => {
+      const deletedEventResponse = { affected: 1, raw: [] } as DeleteResult;
 
-  //       const updateEventMock = jest
-  //         .spyOn(EventService, "deleteEvent")
-  //         .mockResolvedValue();
-  //       const getUserIdMock = jest
-  //         .spyOn(currentUser, "getUserId")
-  //         .mockResolvedValue(1);
+      const deletedEventIdMock = jest
+        .spyOn(EventService, "deleteEvent")
+        .mockResolvedValue(deletedEventResponse);
+      const getUserIdMock = jest
+        .spyOn(currentUser, "getUserId")
+        .mockResolvedValue(1);
 
-  //       const response = await request(app)
-  //         .put("/event/1")
-  //         .send({ ...updatedEvent });
+      const response = await request(app).put("/event/delete/1");
 
-  //       const receivedEvent = {
-  //         ...response.body,
-  //         startTime: new Date(response.body.startTime),
-  //         endTime: new Date(response.body.endTime),
-  //       };
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(true);
 
-  //       expect(response.status).toBe(200);
-  //       expect(receivedEvent).toEqual(updatedEvent);
+      // Verify that the mock was called
+      expect(deletedEventIdMock).toHaveBeenCalledTimes(1);
+    });
 
-  //       // Verify that the mock was called
-  //       expect(updateEventMock).toHaveBeenCalledTimes(1);
-  //       expect(getUserIdMock).toHaveBeenCalledTimes(1);
-  //     });
+    it("should handle BadRequestError", async () => {
+      // Mock the behavior of the EventService method to return undefined
+      const deletedEventResponse = { affected: 0, raw: [] } as DeleteResult;
+      const deletedEventMock = jest
+        .spyOn(EventService, "deleteEvent")
+        .mockResolvedValue(deletedEventResponse);
+      const getUserIdMock = jest
+        .spyOn(currentUser, "getUserId")
+        .mockResolvedValue(1);
 
-  //     it("should handle BadRequestError", async () => {
-  //       // Mock the behavior of the EventService method to return undefined
-  //       const updateEventMock = jest
-  //         .spyOn(EventService, "updateEvent")
-  //         .mockResolvedValue(undefined);
-  //       const getUserIdMock = jest
-  //         .spyOn(currentUser, "getUserId")
-  //         .mockResolvedValue(1);
+      const response = await request(app).put("/event/delete/1");
 
-  //       const response = await request(app)
-  //         .put("/event/1")
-  //         .send({ event: { title: "Updated Event" } });
+      expect(response.status).toBe(400);
 
-  //       expect(response.status).toBe(400);
-
-  //       // Verify that the mock was called
-  //       expect(updateEventMock).toHaveBeenCalledTimes(1);
-  //       expect(getUserIdMock).toHaveBeenCalledTimes(1);
-  //     });
-  //   });
+      // Verify that the mock was called
+      expect(deletedEventMock).toHaveBeenCalledTimes(1);
+    });
+  });
 });
