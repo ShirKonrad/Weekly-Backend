@@ -21,7 +21,7 @@ describe("Task Routes", () => {
 
             const mockedTasks = generateTasksData(2);
             const getAllTasksByUserIdMock = jest.spyOn(TaskService, 'getAllTasksByUserId').mockResolvedValue(Promise.resolve(mockedTasks));
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockResolvedValue(1);
+            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(1);
 
             const response = await request(app).get('/task/all');
 
@@ -47,7 +47,7 @@ describe("Task Routes", () => {
         it("should get an error", async () => {
 
             const getAllTasksByUserIdMock = jest.spyOn(TaskService, 'getAllTasksByUserId').mockRejectedValue(new Error('Some error'));
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockResolvedValue(1);
+            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(1);
 
             const response = await request(app).get('/task/all');
 
@@ -108,7 +108,7 @@ describe("Task Routes", () => {
         it("should set done to true and return the task", async () => {
             const updatedTask = generateTaskData({ setDone: true });
             const setDoneMock = jest.spyOn(TaskService, 'setDone').mockResolvedValue(Promise.resolve(updatedTask));
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockResolvedValue(1);
+            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(1);
 
             const response = await request(app).put('/task/setdone/1');
 
@@ -118,6 +118,7 @@ describe("Task Routes", () => {
             expect(receivedTask).toEqual(updatedTask);
 
             // Verify that the mock was called
+            expect(setDoneMock).toHaveBeenCalledWith(1, 1);
             expect(setDoneMock).toHaveBeenCalledTimes(1);
             expect(getUserIdMock).toHaveBeenCalledTimes(1);
         });
@@ -128,7 +129,7 @@ describe("Task Routes", () => {
             const updatedTask = generateTaskData();
 
             const updateTaskMock = jest.spyOn(TaskService, 'updateTask').mockResolvedValue(updatedTask);
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockResolvedValue(1);
+            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(1);
 
             const response = await request(app)
                 .put('/task/1')
@@ -147,7 +148,7 @@ describe("Task Routes", () => {
         it('should handle BadRequestError', async () => {
             // Mock the behavior of the TaskService method to return undefined
             const updateTaskMock = jest.spyOn(TaskService, 'updateTask').mockResolvedValue(undefined);
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockResolvedValue(1);
+            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(1);
 
             const response = await request(app)
                 .put('/task/1')
