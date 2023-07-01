@@ -17,6 +17,12 @@ import { UserService } from "../services/user";
 const router = wrapAsyncRouter();
 
 /**
+* @swagger
+* tags:
+*   name: Schedule
+*/
+
+/**
  * Get new or existing tasks and events and save them on DB.
  * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events.
  * Update the new assignments in the DB

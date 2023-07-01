@@ -15,6 +15,63 @@ const randToken = require('rand-token');
 
 const router = wrapAsyncRouter();
 
+/** 
+* @swagger
+* tags:
+*   name: User
+*   description: Weekly's user
+*/
+
+// TODO: Fix example
+/**
+* @swagger 
+* components:
+*   schemas:
+*     User:
+*       type: object
+*       required:
+*         - id
+*         - firstName
+*         - lastName
+*         - email
+*         - password
+*         - resetToken
+*         - beginDayHour
+*         - endDayHour
+*         - tags
+*       properties:
+*         id:
+*           type: number
+*           description: The user's id
+*         firstName:
+*           type: string
+*           description: The user's first name
+*         lastName:
+*           type: string
+*           description: The user's last name
+*         email:
+*           type: string
+*           description: The user's sign-in email
+*         password:
+*           type: string
+*           description: The user's sign-in password
+*         resetToken:
+*           type: string
+*           description: Token to reset the log-in
+*         beginDayHour:
+*           type: number
+*           description: The time of day that the user starts working at (full number)
+*         endDayHour:
+*           type: number
+*           description: The time of day that the user ends working at (full number)
+*         tags:
+*           type: array
+*           items:
+*             $ref: '#/components/schemas/Tag'
+*       example: 
+*         id: 1 
+*/
+
 router.post("/register", async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, beginDayHour, endDayHour } =
     req.body.user;
@@ -40,6 +97,45 @@ router.post("/register", async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /user/logIn:
+*   post:
+*     summary: login to Weekly
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 params:
+*                   type: object
+*                   properties:
+*                     email:
+*                       type: string
+*                       description: The user email
+*                     password:
+*                       type: string
+*                       description: The user password
+*     responses:
+*       200:
+*         description: The access & refresh tokens
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 token:
+*                   type: string
+*                   description: The JWT access token
+*                   example: 123cd123x1xx1
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*       400:
+*         description: Wrong data (email doesn't exist / password is wrong)
+*/
 router.post(
   "/logIn",
   async (req: Request, res: Response, next: NextFunction) => {

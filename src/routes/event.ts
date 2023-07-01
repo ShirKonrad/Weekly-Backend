@@ -8,6 +8,12 @@ import { wrapAsyncRouter } from "../helpers/wrapAsyncRouter";
 
 const router = wrapAsyncRouter();
 
+/**
+* @swagger
+* tags:
+*   name: Event
+*/
+
 router.get("/:id", async (req: Request, res: Response) => {
   const event = await EventService.getById(parseInt(req.params.id));
   if (!event) {

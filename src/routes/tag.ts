@@ -10,6 +10,40 @@ import { Tag } from "../models/tag";
 
 const router = wrapAsyncRouter();
 
+/** 
+* @swagger
+* tags:
+*   name: Tag
+*   description: User's categories for tasks and events organization
+*/
+
+/**
+* @swagger 
+* components:
+*   schemas:
+*     Tag:
+*       type: object
+*       required:
+*         - id
+*         - name
+*         - user
+*         - color
+*       properties:
+*         id:
+*           type: number
+*           description: The tag's id
+*         name:
+*           type: string
+*           description: The tag's name
+*         color:
+*           type: string
+*           description: Color for the tag (Hex)
+*       example:
+*         id: 1
+*         name: 'Tag Name'
+*         color: '#33d7cd'
+*/
+
 router.get("/all-by-user", async (req: Request, res: Response) => {
   const tags = await TagService.getAllTagsByUserId(getUserId(req));
   if (!tags) {
