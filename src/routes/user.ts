@@ -216,9 +216,9 @@ router.post('/resetPassword', async (req: Request, res: Response) => {
 });
 
 router.post('/validateToken', async (req: Request, res: Response) => {
-  const { id, resetToken } = req.body.params;
+  const { resetToken } = req.body.params;
 
-  const dbUser = await UserService.getUserById(id);
+  const dbUser = await UserService.getUserById(getUserId(req));
 
   if (dbUser) {
     if (dbUser.resetToken === resetToken) {
@@ -232,9 +232,9 @@ router.post('/validateToken', async (req: Request, res: Response) => {
 });
 
 router.put('/updatePassword', async (req: Request, res: Response) => {
-  const { id, password } = req.body.params;
+  const { password } = req.body.params;
 
-  let dbUser = await UserService.getUserById(id);
+  let dbUser = await UserService.getUserById(getUserId(req));
 
   if (dbUser) {
     let hashedPassword = bcrypt.hashSync(password, 10);
