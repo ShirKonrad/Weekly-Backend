@@ -15,7 +15,6 @@ const router = wrapAsyncRouter();
 *   description: Mission to accomplish until a certain date, without a specific time
 */
 
-// TODO: fix example for tag
 /**
 * @swagger 
 * components:
@@ -53,42 +52,32 @@ const router = wrapAsyncRouter();
 *         priority:
 *           type: number
 *           description: The task's priority (1-3 when 1 is the most-important)
+*         isDone:
+*           type: boolean
+*           description: Weather you have finished the task
 *         assignment:
 *           type: string
 *           format: date
 *           description: The time that the task is scheduled to be done
-*         isDone:
-*           type: boolean
-*           description: Weather you have finished the task
 *         assignmentLastUpdate:
 *           type: string
 *           format: date
 *           description: The last time the assignment date ws updated
 *       example: 
-*         id: 1
-*         title: 'Task Title'
-*         location: 'Home'
-*         description: 'Here describe your task details'
+*         id: 0
+*         title: 'Review PR'
+*         location: 'Rishon Letzion'
+*         description: 'Review my PRs'
 *         estTime: 2
 *         dueDate: '2023-06-23T08:00:00.000Z'
-*         tag:
-*         priority: 1
-*         assignment: '2023-06-20T17:00:00.000Z'
+*         tag: 
+*           id: 0
+*           name: 'Work'
+*           color: '#33d7cd'
+*         priority: 2
 *         isDone: false
+*         assignment: '2023-06-20T17:00:00.000Z'
 *         assignmentLastUpdate: '2023-06-20T15:57:55.961Z'
-*     Errors:
-*       type: object
-*       required:
-*         - errors
-*       properties:
-*         errors:
-*           description: an array of all the errors
-*           type: array
-*           items:
-*             properties:
-*               message:
-*                 type: object
-*                 description: error text
 */
 
 /**
@@ -112,11 +101,7 @@ const router = wrapAsyncRouter();
 *             schema:
 *               $ref: '#/components/schemas/Task'
 *       404:
-*         description: Task not found
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/NotFound'
 */
 router.get(
   "/getOne/:id",
@@ -145,12 +130,10 @@ router.get(
 *               type: array
 *               items:
 *                 $ref: '#/components/schemas/Task'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 *       404:
-*         description: Tasks not found
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/NotFound'
 */
 router.get("/all", async (req: Request, res: Response, next: NextFunction) => {
   const tasks = await TaskService.getAllTasksByUserId(getUserId(req), true, true);
@@ -181,12 +164,10 @@ router.get("/all", async (req: Request, res: Response, next: NextFunction) => {
 *           application/json:
 *             schema:
 *               $ref: '#/components/schemas/Task'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 *       404:
-*         description: Task not found
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/NotFound'
 */
 router.put(
   "/setdone/:id",
@@ -201,7 +182,6 @@ router.put(
   }
 );
 
-// TODO: Problem - the task schema is the req body comes filled with the example data...
 /**
 * @swagger
 * /task/{id}:
@@ -232,17 +212,15 @@ router.put(
 *             schema:
 *               $ref: '#/components/schemas/Task'
 *       400:
-*         description: Updating task failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 *       500:
-*         description: Assignment can't be after due date
+*         description: 'Error: Validation Error'
 *         content:
 *           application/json:
 *             schema:
-*               $ref: '#/components/schemas/Errors'
+*               $ref: '#/definitions/Error'
 */
 router.put("/:id", async (req: Request, res: Response) => {
   const updatedTask = await TaskService.updateTask(req.body.task as ITask, getUserId(req));
@@ -274,11 +252,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 *             schema:
 *               type: boolean
 *       400:
-*         description: Deleting task failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
 */
 router.put("/delete/:id", async (req: Request, res: Response) => {
   const retVal = await TaskService.deleteTask(parseInt(req.params.id));

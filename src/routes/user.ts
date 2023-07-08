@@ -22,7 +22,6 @@ const router = wrapAsyncRouter();
 *   description: Weekly's user
 */
 
-// TODO: Fix example
 /**
 * @swagger 
 * components:
@@ -35,7 +34,6 @@ const router = wrapAsyncRouter();
 *         - lastName
 *         - email
 *         - password
-*         - resetToken
 *         - beginDayHour
 *         - endDayHour
 *         - tags
@@ -55,9 +53,6 @@ const router = wrapAsyncRouter();
 *         password:
 *           type: string
 *           description: The user's sign-in password
-*         resetToken:
-*           type: string
-*           description: Token to reset the log-in
 *         beginDayHour:
 *           type: number
 *           description: The time of day that the user starts working at (full number)
@@ -69,9 +64,54 @@ const router = wrapAsyncRouter();
 *           items:
 *             $ref: '#/components/schemas/Tag'
 *       example: 
-*         id: 1 
+*         id: 0
+*         firstName: 'Tiki'
+*         lastName: 'Pur'
+*         email: 'tikiPur@gmail.com'
+*         password: '123'
+*         beginDayHour: 9
+*         endDayHour: 22
+*         tags:
+*           - id: 0
+*             name: 'Work'
+*             color: '#33d7cd'
+*           - id: 1
+*             name: 'School'
+*             color: '#313131'
 */
 
+/**
+* @swagger
+* /user/register:
+*   post:
+*     summary: create a new user
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*     responses:
+*       200:
+*         description: the new user and its token
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 token:
+*                   type: string
+*                   description: The JWT access token
+*                   example: 123cd123x1xx1
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*       400:
+*         $ref: '#/responses/BadRequest'
+*/
 router.post("/register", async (req: Request, res: Response) => {
   const { firstName, lastName, email, password, beginDayHour, endDayHour } =
     req.body.user;
@@ -134,7 +174,7 @@ router.post("/register", async (req: Request, res: Response) => {
 *                 user:
 *                   $ref: '#/components/schemas/User'
 *       400:
-*         description: Wrong data (email doesn't exist / password is wrong)
+*         $ref: '#/responses/BadRequest'
 */
 router.post(
   "/logIn",
@@ -170,6 +210,29 @@ router.post(
   }
 );
 
+/**
+* @swagger
+* /user:
+*   put:
+*     summary: updating user data
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*     responses:
+*       200:
+*         description: The data was updated successfully
+*       400:
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
+*/
 router.put("/", async (req: Request, res: Response) => {
   const { id, firstName, lastName, beginDayHour, endDayHour } = req.body.user;
   const currUserId = getUserId(req);
@@ -193,6 +256,42 @@ router.put("/", async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /user/resetPassword:
+*   post:
+*     summary: Generating a new password
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 params:
+*                   type: object
+*                   properties:
+*                     email:
+*                       type: string
+*                       description: The user's email
+*     responses:
+*       200:
+*         description: The data was updated successfully
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 user:
+*                   type: object
+*                   properties:
+*                     id:
+*                       type: number
+*                       description: The user's id
+*       400:
+*         $ref: '#/responses/BadRequest'
+*/
 router.post('/resetPassword', async (req: Request, res: Response) => {
   const { email } = req.body.params;
 
@@ -215,6 +314,33 @@ router.post('/resetPassword', async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /user/validateToken:
+*   post:
+*     summary: Generating a new password
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 params:
+*                   type: object
+*                   properties:
+*                     resetToken:
+*                       type: string
+*                       description: The reset token of the user
+*     responses:
+*       200:
+*         description: The data was updated successfully
+*       400:
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
+*/
 router.post('/validateToken', async (req: Request, res: Response) => {
   const { resetToken } = req.body.params;
 
@@ -231,6 +357,44 @@ router.post('/validateToken', async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /user/updatePassword:
+*   put:
+*     summary: Generating a new password
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 params:
+*                   type: object
+*                   properties:
+*                     password:
+*                       type: string
+*                       description: The wanted new password
+*     responses:
+*       200:
+*         description: The data was updated successfully
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 token:
+*                   type: string
+*                   description: The JWT access token
+*                   example: 123cd123x1xx1
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*       400:
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
+*/
 router.put('/updatePassword', async (req: Request, res: Response) => {
   const { password } = req.body.params;
 
@@ -248,6 +412,48 @@ router.put('/updatePassword', async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /user/logInGoogle:
+*   post:
+*     summary: Login to weekly with your Google account
+*     tags: [User]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 user:
+*                   type: object
+*                   properties:
+*                     email:
+*                       type: string
+*                       description: The Google account email
+*                     firstName:
+*                       type: string
+*                       description: The user's first name (from Google)
+*                     lastName:
+*                       type: string
+*                       description: The user's last name (from Google)
+*     responses:
+*       200:
+*         description: the new user and its token
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 token:
+*                   type: string
+*                   description: The JWT access token
+*                   example: 123cd123x1xx1
+*                 user:
+*                   $ref: '#/components/schemas/User'
+*       400:
+*         $ref: '#/responses/BadRequest'
+*/
 router.post('/logInGoogle', async (req: Request, res: Response) => {
   let dbUser = await UserService.getUserByEmail(req.body.user.email);
 

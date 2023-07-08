@@ -15,7 +15,6 @@ const router = wrapAsyncRouter();
 *   description: A block in a specific time on the schedule
 */
 
-// TODO: fix example for tag
 /**
 * @swagger 
 * components:
@@ -27,7 +26,7 @@ const router = wrapAsyncRouter();
 *         - title
 *         - startTime
 *         - endTime
-*         - userId
+*         - tag
 *       properties:
 *         id:
 *           type: number
@@ -55,43 +54,43 @@ const router = wrapAsyncRouter();
 *           type: number
 *           description: The user that the event belongs to
 *       example: 
-*         id: 1
-*         title: 'Event Title'
+*         id: 0
+*         title: 'Meeting'
 *         location: 'Home'
-*         description: 'Here describe your event details'
+*         description: 'Another meeting'
 *         startTime: '2023-06-23T08:00:00.000Z'
 *         endTime: '2023-06-23T10:00:00.000Z'
-*         tag:
-*         userId: 42
+*         tag: 
+*           id: 0
+*           name: 'Work'
+*           color: '#33d7cd'
+*         userId: 0
 */
 
 /**
 * @swagger
 * /event/{id}:
 *   get:
-*     summary: get event data by id
+*     summary: Get event data by id
 *     tags: [Event]
 *     parameters:
 *       - in: path
 *         name: id
+*         required: true
+*         description: The event's ID
 *         schema:
 *           type: string
-*         required: true
-*         description: The event id
 *     responses:
 *       200:
-*         description: The event data
+*         description: The event data (Received WITHOUT the userId field)
 *         content:
 *           application/json:
 *             schema:
 *               $ref: '#/components/schemas/Event'
 *       404:
-*         description: Event not found
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/NotFound'
 */
+
 router.get("/:id", async (req: Request, res: Response) => {
   const event = await EventService.getById(parseInt(req.params.id));
   if (!event) {
@@ -101,7 +100,6 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-// TODO: Problem - the event schema is the req body comes filled with the example data...
 /**
 * @swagger
 * /event/{id}:
@@ -132,11 +130,9 @@ router.get("/:id", async (req: Request, res: Response) => {
 *             schema:
 *               $ref: '#/components/schemas/Event'
 *       400:
-*         description: Updating event failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 */
 router.put("/:id", async (req: Request, res: Response) => {
 
@@ -160,7 +156,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 *         schema:
 *           type: string
 *         required: true
-*         description: The event id
+*         description: The event's id
 *     responses:
 *       200:
 *         description: Event deleted successfully
@@ -169,11 +165,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 *             schema:
 *               type: boolean
 *       400:
-*         description: Deleting event failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
 */
 router.put("/delete/:id", async (req: Request, res: Response) => {
   const retVal = await EventService.deleteEvent(parseInt(req.params.id));

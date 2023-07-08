@@ -1,5 +1,4 @@
 import { Request, Response, Router } from "express";
-import { BadRequestError } from "../errors/badRequestError";
 import { ClientMessageError } from "../errors/clientMessageError";
 import { clientErrors } from "../helpers/constants";
 import { getUserId } from "../helpers/currentUser";
@@ -20,8 +19,84 @@ const router = wrapAsyncRouter();
 * @swagger
 * tags:
 *   name: Schedule
+*   description: Actions to control the week items' assigning
 */
 
+/**
+* @swagger 
+* definitions:
+*   FormattedItem:
+*     type: object
+*     properties:
+*       id:
+*         type: number
+*         description: Item's ID
+*       title:
+*         type: string
+*         description: Item's title
+*       startTime:
+*         type: string
+*         format: date
+*         description: Item's start time in the schedule
+*       endTime:
+*         type: string
+*         format: date
+*         description: Item's end time in the schedule
+*       tag:
+*         $ref: '#/components/schemas/Tag'
+*       isTask:
+*         type: boolean
+*         description: Task - true, Event - false
+*/
+
+/**
+* @swagger
+* /schedule:
+*   post:
+*     summary: Save new tasks & events and generate the schedule with the algorithm
+*     tags: [Schedule]
+*     requestBody:
+*         required: true
+*         content: 
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 tasks:
+*                   type: array
+*                   items:
+*                     $ref: '#/components/schemas/Task'
+*                 events:
+*                   type: array
+*                   items:
+*                     $ref: '#/components/schemas/Event'
+*     responses:
+*       200:
+*         description: Schedule successfully updated
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 assignedTasks:
+*                   type: array
+*                   items:
+*                     $ref: '#/components/schemas/Task'
+*                 notAssignedTasks:
+*                   type: array
+*                   items:
+*                     $ref: '#/components/schemas/Task'
+*       500:
+*         description: 'Error: Client Message Error'
+*         content:
+*           application/json:
+*             schema:
+*               $ref: '#/definitions/Error'
+*       400:
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
+*/
 /**
  * Get new or existing tasks and events and save them on DB.
  * Then select all the tasks and events in the user's schedule and regenerate the schedule with the new tasks and events.
@@ -75,6 +150,40 @@ router.post("", async (req: Request, res: Response) => {
   }
 });
 
+/**
+* @swagger
+* /schedule/week:
+*   get:
+*     summary: Get scheduled tasks and events for the current user
+*     tags: [Schedule]
+*     parameters:
+*       - in: query
+*         name: minDate
+*         schema:
+*           type: string
+*           format: date
+*         required: false
+*         description: Return only tasks & events assigned after that date
+*       - in: query
+*         name: maxDate
+*         schema:
+*           type: string
+*           format: date
+*         required: false
+*         description: Return only tasks & events assigned before that date
+*     responses:
+*       200:
+*         content:
+*           application/json:
+*             schema:
+*               type: array
+*               items:
+*                 $ref: '#/definitions/FormattedItem'
+*       400:
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
+*/
 router.get("/week", async (req: Request, res: Response) => {
 
   const userId = getUserId(req);
@@ -82,7 +191,7 @@ router.get("/week", async (req: Request, res: Response) => {
   let tasks: Task[] = [];
   let events: Event[] = [];
 
-  // Selecting the tasks and the enevts separately.
+  // Selecting the tasks and the events separately.
   // If there is a date range from the client, select only in the given dates, otherwise select all
   if (req?.query?.minDate && req?.query?.maxDate) {
     const minDate = new Date(req?.query?.minDate.toString());

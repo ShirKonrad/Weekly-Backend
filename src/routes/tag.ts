@@ -39,8 +39,8 @@ const router = wrapAsyncRouter();
 *           type: string
 *           description: Color for the tag (Hex)
 *       example:
-*         id: 1
-*         name: 'Tag Name'
+*         id: 0
+*         name: 'Work'
 *         color: '#33d7cd'
 */
 
@@ -59,12 +59,10 @@ const router = wrapAsyncRouter();
 *               type: array
 *               items:
 *                 $ref: '#/components/schemas/Tag'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 *       404:
-*         description: Tags not found
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/NotFound'
 */
 router.get("/all-by-user", async (req: Request, res: Response) => {
   const tags = await TagService.getAllTagsByUserId(getUserId(req));
@@ -99,11 +97,7 @@ router.get("/all-by-user", async (req: Request, res: Response) => {
 *               type: object
 *               $ref: '#/components/schemas/Tag'
 *       400:
-*         description: Saving new tag failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
 */
 router.post("/add", async (req: Request, res: Response) => {
   const newTag = await TagService.addNewTag(req.body.tag, getUserId(req));
@@ -135,11 +129,7 @@ router.post("/add", async (req: Request, res: Response) => {
 *             schema:
 *               type: boolean
 *       400:
-*         description: Deleting tag failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
 */
 router.put("/delete/:id", async (req: Request, res: Response) => {
   const retVal = await TagService.deleteTag(parseInt(req.params.id));
@@ -181,11 +171,9 @@ router.put("/delete/:id", async (req: Request, res: Response) => {
 *               type: object
 *               $ref: '#/components/schemas/Tag'
 *       400:
-*         description: Updating tag failed
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/Errors'
+*         $ref: '#/responses/BadRequest'
+*       401:
+*         $ref: '#/responses/Unauthorized'
 */
 router.put("/update/:id", async (req: Request, res: Response) => {
   const updatedTag = await TagService.updateTag(req.body.tag as Tag, getUserId(req));
