@@ -1,52 +1,55 @@
 import { User } from "../models/user";
 
-export async function getUserById(userId: number) {
-    return await User.findOne({
-        where: {
-            id: userId
-        },
-    });
-}
+export class UserService {
 
-export async function getUserByEmail(email: string) {
-    return await User.findOne({
-        where: {
-            email: email
-        },
-    });
-}
+    static getUserById = async (userId: number) => {
+        return await User.findOne({
+            where: {
+                id: userId
+            },
+        });
+    }
 
-export async function createUser(firstName: string, lastName: string, email: string, password?: string, beginDayHour?: number, endDayHour?: number) {
-    const user = await User.create({
-        firstName,
-        lastName,
-        email,
-        password,
-        beginDayHour,
-        endDayHour
-    })
+    static getUserByEmail = async (email: string) => {
+        return await User.findOne({
+            where: {
+                email: email
+            },
+        });
+    }
 
-    const results = await User.save(user)
-    return results
-}
+    static createUser = async (firstName: string, lastName: string, email: string, password?: string, beginDayHour?: number, endDayHour?: number) => {
+        const user = await User.create({
+            firstName,
+            lastName,
+            email,
+            password,
+            beginDayHour,
+            endDayHour
+        })
 
-export async function updateUser(userId: number, firstName: string, lastName: string, beginDayHour: number, endDayHour: number) {
-    return await User.update(userId, {
-        firstName,
-        lastName,
-        beginDayHour,
-        endDayHour
-    });
-}
+        const results = await User.save(user)
+        return results
+    }
 
-export async function updateUserResetToken(userId: number, resetToken: string) {
-    return await User.update(userId, {resetToken})
-}
+    static updateUser = async (userId: number, firstName: string, lastName: string, beginDayHour: number, endDayHour: number) => {
+        return await User.update(userId, {
+            firstName,
+            lastName,
+            beginDayHour,
+            endDayHour
+        });
+    }
 
-export async function updateUserPassword(userId: number, password: string) {
-    return await User.update(userId, {password})
-}
+    static updateUserResetToken = async (userId: number, resetToken: string) => {
+        return await User.update(userId, { resetToken })
+    }
 
-export async function getAllUsers() {
-    return await User.find();
+    static updateUserPassword = async (userId: number, password: string) => {
+        return await User.update(userId, { password })
+    }
+
+    static getAllUsers = async () => {
+        return await User.find();
+    }
 }

@@ -1,23 +1,13 @@
-import express, { Request, Response } from "express";
 import { connectToDb } from "./config";
 import { NotFoundError } from "./errors/notFoundError";
 import { errorHandler } from "./middlewares/errorHandler";
-import { router } from "./routes"
-import cors from "cors";
 import { assignmentsUpdate } from "./services/job";
 const cron = require("node-cron");
 const compression = require("compression");
 
-const app = express();
+const app = require("./server")
 
-app.use(compression());
-app.use(express.json());
-app.use(cors());
-
-
-app.use(router);
-
-// Try to reach to unexisting route
+// Try to reach to un-existing route
 app.all("*", () => {
     throw new NotFoundError();
 });
@@ -33,9 +23,8 @@ app.use(errorHandler);
 
 const PORT = process.env.SERVER_PORT;
 app.listen(PORT, async () => {
-    console.log(`[Server]: I am running at https://localhost:${PORT}`);
+    console.log(`[Server]: I am running at ${process.env.SERVER_URL}`);
     await connectToDb();
 });
-
 
 

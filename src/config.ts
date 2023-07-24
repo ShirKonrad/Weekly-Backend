@@ -7,7 +7,7 @@ import { DatabaseConnectionError } from "./errors/databaseConnectionError";
 
 require('dotenv').config();
 
-const AppDataSource = new DataSource({
+export const AppDataSource = new DataSource({
   host: process.env.POSTGRES_HOST,
   database: process.env.POSTGRES_DATABASE,
   username: process.env.POSTGRES_USER,
