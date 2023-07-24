@@ -1,25 +1,13 @@
-import express, { Request, Response } from "express";
 import { connectToDb } from "./config";
 import { NotFoundError } from "./errors/notFoundError";
 import { errorHandler } from "./middlewares/errorHandler";
-import { router } from "./routes"
-import cors from "cors";
 import { assignmentsUpdate } from "./services/job";
 const cron = require("node-cron");
 const compression = require("compression");
 
-// const app = express();
-
-// app.use(compression());
-// app.use(express.json());
-// app.use(cors());
-
-
-// app.use(router);
-
 const app = require("./server")
 
-// Try to reach to unexisting route
+// Try to reach to un-existing route
 app.all("*", () => {
     throw new NotFoundError();
 });

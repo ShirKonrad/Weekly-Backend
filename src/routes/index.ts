@@ -7,6 +7,43 @@ import { eventRouter } from "./event";
 
 const router = Router();
 
+/**
+* @swagger 
+* definitions:
+*   Error:
+*       type: object
+*       required:
+*         - errors
+*       properties:
+*         errors:
+*           description: an array of all the errors
+*           type: array
+*           items:
+*             properties:
+*               message:
+*                 type: object
+*                 example: error text
+* responses:
+*   BadRequest:
+*     description: 'Error: Bad Request'
+*     content:
+*       application/json:
+*         schema:
+*           $ref: '#/definitions/Error'
+*   Unauthorized:
+*     description: 'Error: Unauthorized'
+*     content:
+*       application/json:
+*         schema:
+*           $ref: '#/definitions/Error'
+*   NotFound:
+*     description: 'Error: Not Found'
+*     content:
+*       application/json:
+*         schema:
+*           $ref: '#/definitions/Error'
+*/
+
 // Add new routes here
 router.use("/task", taskRouter);
 router.use("/event", eventRouter);
