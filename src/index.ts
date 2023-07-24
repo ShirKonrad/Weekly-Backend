@@ -23,7 +23,7 @@ app.use(errorHandler);
 
 const PORT = process.env.SERVER_PORT;
 app.listen(PORT, async () => {
-    console.log(`[Server]: I am running at https://localhost:${PORT}`);
+    console.log(`[Server]: I am running at ${process.env.SERVER_URL}`);
     await connectToDb();
 });
 
