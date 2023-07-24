@@ -6,6 +6,8 @@ const mail = nodemailer.createTransport({
         user: process.env.EMAIL,
         pass: process.env.EMAIL_PASSWORD,
     },
+    port: process.env.EMAIL_PORT,
+    secure: false,
     from: process.env.EMAIL
 });
 
