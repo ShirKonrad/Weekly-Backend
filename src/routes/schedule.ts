@@ -76,7 +76,7 @@ router.get("/week", async (req: Request, res: Response) => {
   let tasks: Task[] = [];
   let events: Event[] = [];
 
-  // Selecting the tasks and the enevts separately.
+  // Selecting the tasks and the events separately.
   // If there is a date range from the client, select only in the given dates, otherwise select all
   if (req?.query?.minDate && req?.query?.maxDate) {
     const minDate = new Date(req?.query?.minDate.toString());
