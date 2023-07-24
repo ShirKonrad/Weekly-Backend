@@ -7,6 +7,7 @@ module.exports = {
       env: {
         NODE_ENV: "development",
         SERVER_PORT: 3001,
+        SERVER_URL: "http://weekly.cs.colman.ac.il:3001",
         POSTGRES_PORT: 5432,
         POSTGRES_HOST: "10.10.248.109",
         POSTGRES_DATABASE: "postgres",
@@ -16,7 +17,7 @@ module.exports = {
         SECRET_KEY: "weeklysecret",
         EMAIL: "myyweeklyy@gmail.com",
         EMAIL_PASSWORD: "wknjahuivkcikowe",
-        EMAIL_HOST: "193.106.55.109",
+        // EMAIL_HOST: "193.106.55.109",
         EMAIL_PORT: 587,
       },
       // env_production: {
