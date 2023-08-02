@@ -179,16 +179,16 @@ describe("User Routes", () => {
             const mockedUser = generateUserData({ id: 1, resetToken: 'validToken' });
             const resetToken = 'validToken';
 
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
+            // const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
             const getUserByIdMock = jest.spyOn(UserService, 'getUserById').mockResolvedValue(mockedUser);
 
             const response = await request(app)
                 .post('/user/validateToken')
-                .send({ params: { resetToken } })
+                .send({ params: { id: userId, resetToken } })
                 .expect(200);
 
             expect(getUserByIdMock).toHaveBeenCalledWith(mockedUser.id);
-            expect(getUserIdMock).toHaveBeenCalled();
+            // expect(getUserIdMock).toHaveBeenCalled();
         });
 
         it('should return an error if the token is incorrect', async () => {
@@ -196,16 +196,16 @@ describe("User Routes", () => {
             const mockedUser = generateUserData({ id: 1, resetToken: 'validToken' });
             const resetToken = 'invalidToken';
 
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
+            // const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
             const getUserByIdMock = jest.spyOn(UserService, 'getUserById').mockResolvedValue(mockedUser);
 
             const response = await request(app)
                 .post('/user/validateToken')
-                .send({ params: { resetToken } })
+                .send({ params: { id: userId, resetToken } })
                 .expect(401);
 
             expect(getUserByIdMock).toHaveBeenCalledWith(mockedUser.id);
-            expect(getUserIdMock).toHaveBeenCalled();
+            // expect(getUserIdMock).toHaveBeenCalled();
 
         });
     });
@@ -216,13 +216,13 @@ describe("User Routes", () => {
             const password = 'newPassword';
             const mockedUser = generateUserData({ id: 1 });
 
-            const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
+            // const getUserIdMock = jest.spyOn(currentUser, 'getUserId').mockReturnValue(userId);
             const getUserByIdMock = jest.spyOn(UserService, 'getUserById').mockResolvedValue(mockedUser);
             const updateUserPasswordMock = jest.spyOn(UserService, 'updateUserPassword').mockResolvedValue(null as any);
 
             const response = await request(app)
                 .put('/user/updatePassword')
-                .send({ params: { password } })
+                .send({ params: { id: userId, password } })
                 .expect(200);
 
             expect(response.status).toBe(200);
@@ -231,7 +231,7 @@ describe("User Routes", () => {
             expect(response.body.user).toEqual(mockedUser);
 
             expect(getUserByIdMock).toHaveBeenCalledWith(mockedUser.id);
-            expect(getUserIdMock).toHaveBeenCalled();
+            // expect(getUserIdMock).toHaveBeenCalled();
         });
     });
 });
