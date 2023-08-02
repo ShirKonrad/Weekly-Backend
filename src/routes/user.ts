@@ -342,9 +342,9 @@ router.post('/resetPassword', async (req: Request, res: Response) => {
 *         $ref: '#/responses/Unauthorized'
 */
 router.post('/validateToken', async (req: Request, res: Response) => {
-  const { resetToken } = req.body.params;
+  const { resetToken, id } = req.body.params;
 
-  const dbUser = await UserService.getUserById(getUserId(req));
+  const dbUser = await UserService.getUserById(id);
 
   if (dbUser) {
     if (dbUser.resetToken === resetToken) {
@@ -396,9 +396,9 @@ router.post('/validateToken', async (req: Request, res: Response) => {
 *         $ref: '#/responses/Unauthorized'
 */
 router.put('/updatePassword', async (req: Request, res: Response) => {
-  const { password } = req.body.params;
+  const { password, id } = req.body.params;
 
-  let dbUser = await UserService.getUserById(getUserId(req));
+  let dbUser = await UserService.getUserById(id);
 
   if (dbUser) {
     let hashedPassword = bcrypt.hashSync(password, 10);
